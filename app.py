@@ -94,17 +94,31 @@ if user_input and not st.session_state["input_submitted"]:
 if st.session_state["input_submitted"]:
     st.session_state["input_submitted"] = False
 
-# PDF uploader section (after input)
-uploaded_file = st.file_uploader("📄 Upload a PDF (e.g., contract, policy, legal doc)", type=["pdf"])
+# PDF Upload section
+uploaded_file = st.file_uploader("📄 Upload a PDF", type=["pdf"])
 
 if uploaded_file:
-    file_name = uploaded_file.name
-    if file_name not in st.session_state["uploaded_docs"]:
-        reader = PdfReader(uploaded_file)
-        pdf_text = "\n\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
-        st.session_state["messages"].append({
-            "role": "user",
-            "parts": f"Extracted from uploaded PDF '{file_name}':\n{pdf_text[:3000]}"
-        })
-        st.session_state["uploaded_docs"].append(file_name)
-        st.rerun()
+    reader = PdfReader(uploaded_file)
+    pdf_text = "\n\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
+
+    # Store uploaded document text in session (optional logic)
+    if not st.session_state.get("uploaded_docs"):
+        st.session_state["uploaded_docs"] = []
+
+    st.session_state["uploaded_docs"].append({
+        "filename": uploaded_file.name,
+        "content": pdf_text[:3000]
+    })
+
+    st.session_state["messages"].append({
+        "role": "user",
+        "parts": f"Extracted from uploaded PDF:\n{pdf_text[:3000]}"
+    })
+
+    st.rerun()
+
+# Later usage
+if st.session_state.get("uploaded_docs"):
+    st.markdown("📎 **Uploaded Documents**")
+    for doc in st.session_state["uploaded_docs"]:
+        st.markdown(f"- {doc['filename']}")
