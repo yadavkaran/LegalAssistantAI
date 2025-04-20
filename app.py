@@ -44,13 +44,6 @@ if "messages" not in st.session_state:
 st.title("📚 Compliance & Legal Assistant Chatbot")
 st.markdown("💼 I can help with regulations, drafting documents, summaries, and more.")
 
-# PDF Upload
-uploaded_file = st.file_uploader("📄 Upload a PDF (e.g., contract, policy, legal doc)", type=["pdf"])
-if uploaded_file:
-    reader = PdfReader(uploaded_file)
-    pdf_text = "\n\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
-    st.session_state["messages"].append({"role": "user", "parts": f"Extracted from uploaded PDF:\n{pdf_text[:3000]}"})  # Truncate if long
-
 # Display previous chat messages first (from oldest to newest)
 for msg in st.session_state["messages"][1:]:
     role = "🧑" if msg["role"] == "user" else "🤖"
@@ -73,4 +66,11 @@ if user_input:
         st.rerun()
     except Exception as e:
         st.error(f"Error: {str(e)}")
+
+uploaded_file = st.file_uploader("📄 Upload a PDF (e.g., contract, policy, legal doc)", type=["pdf"])
+if uploaded_file:
+    reader = PdfReader(uploaded_file)
+    pdf_text = "\n\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
+    st.session_state["messages"].append({"role": "user", "parts": f"Extracted from uploaded PDF:\n{pdf_text[:3000]}"})
+    st.rerun()
 
