@@ -33,15 +33,18 @@ Default jurisdiction: United States (unless the user specifies otherwise).
 }
 if "user_id" not in st.session_state:
     st.session_state["user_id"] = str(uuid.uuid4())
+
 if "messages" not in st.session_state:
     st.session_state["messages"] = [system_prompt]
+
 if "input_submitted" not in st.session_state:
     st.session_state["input_submitted"] = False
+
 if "pdf_uploaded" not in st.session_state:
     st.session_state["pdf_uploaded"] = False
 
 # Title
-st.title("📚 Compliance & Legal Assistant")
+st.title("📚 VD - Compliance & Legal Assistant")
 st.markdown("💼 I can help with regulations, drafting documents, summaries, and more.")
 
 # Display messages
@@ -50,27 +53,32 @@ for msg in st.session_state["messages"][1:]:
     st.markdown(f"**{role}:** {msg['parts']}")
 
 # Chat Input
-user_input = st.text_input("💬 How can I assist you today?", key="chat_input")
+user_input = st.text_input(
+    "💬 How can I assist you today?",
+    key=f"chat_input_{len(st.session_state['messages'])}"
+)
 
 if user_input and not st.session_state["input_submitted"]:
     st.session_state["messages"].append({"role": "user", "parts": user_input})
     try:
         response = model.generate_content(st.session_state["messages"])
         st.session_state["messages"].append({"role": "model", "parts": response.text})
+
         os.makedirs("logs", exist_ok=True)
         with open(f"logs/{st.session_state['user_id']}.txt", "a", encoding="utf-8") as f:
             f.write(f"\nUser: {user_input}\nBot: {response.text}\n")
+
         st.session_state["input_submitted"] = True
         st.rerun()
+
     except Exception as e:
         st.error(f"Error: {str(e)}")
 
-# Reset the flag after rerun
+# Reset flag after rerun
 if st.session_state["input_submitted"]:
     st.session_state["input_submitted"] = False
-    st.session_state["chat_input"] = ""
 
-# File uploader
+# PDF uploader section (after input)
 uploaded_file = st.file_uploader("📄 Upload a PDF (e.g., contract, policy, legal doc)", type=["pdf"])
 
 if uploaded_file and not st.session_state["pdf_uploaded"]:
