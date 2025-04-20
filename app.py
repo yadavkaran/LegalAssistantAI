@@ -41,7 +41,7 @@ if "messages" not in st.session_state:
     st.session_state["messages"] = [system_prompt]
 
 # UI
-st.title("📚 Compliance & Legal Assistant Chatbot")
+st.title("📚 Compliance & Legal Assistant")
 st.markdown("💼 I can help with regulations, drafting documents, summaries, and more.")
 
 # Display previous chat messages first (from oldest to newest)
