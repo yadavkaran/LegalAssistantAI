@@ -1,6 +1,7 @@
 import streamlit as st
 import google.generativeai as genai
 import os
+import base64
 import uuid
 from PyPDF2 import PdfReader
 
@@ -30,30 +31,41 @@ Guidelines for responses:
 Default jurisdiction: United States (unless the user specifies otherwise).
 """
 }
-
-# Initialize session state
 if "user_id" not in st.session_state:
     st.session_state["user_id"] = str(uuid.uuid4())
+
 if "messages" not in st.session_state:
     st.session_state["messages"] = [system_prompt]
+
 if "input_submitted" not in st.session_state:
     st.session_state["input_submitted"] = False
-if "uploaded_docs" not in st.session_state:
-    st.session_state["uploaded_docs"] = []
 
-# UI
-st.title("📚 Compliance & Legal Assistant")
+if "pdf_uploaded" not in st.session_state:
+    st.session_state["pdf_uploaded"] = False
+
+
+# Reset chat button
+if st.button("🗑️ Reset Chat"):
+    st.session_state["messages"] = [system_prompt]
+    st.session_state["uploaded_docs"] = []
+    st.rerun()
+	
+	
+# Title
+st.title("📚 VD - Compliance & Legal Assistant")
 st.markdown("💼 I can help with regulations, drafting documents, summaries, and more.")
 
-# Display chat history
+# Display messages
 for msg in st.session_state["messages"][1:]:
     role = "🧑" if msg["role"] == "user" else "🤖"
     st.markdown(f"**{role}:** {msg['parts']}")
 
-# Chat input (with dynamic key)
-user_input = st.text_input("💬 How can I assist you today?", key=f"chat_input_{len(st.session_state['messages'])}")
+# Chat Input
+user_input = st.text_input(
+    "💬 How can I assist you today?",
+    key=f"chat_input_{len(st.session_state['messages'])}"
+)
 
-# Handle user input
 if user_input and not st.session_state["input_submitted"]:
     st.session_state["messages"].append({"role": "user", "parts": user_input})
     try:
@@ -74,28 +86,15 @@ if user_input and not st.session_state["input_submitted"]:
 if st.session_state["input_submitted"]:
     st.session_state["input_submitted"] = False
 
-# PDF upload
+# PDF uploader section (after input)
 uploaded_file = st.file_uploader("📄 Upload a PDF (e.g., contract, policy, legal doc)", type=["pdf"])
 
-if uploaded_file:
+if uploaded_file and not st.session_state["pdf_uploaded"]:
     reader = PdfReader(uploaded_file)
     pdf_text = "\n\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
-
-    # Save uploaded doc info
-    st.session_state["uploaded_docs"].append({
-        "filename": uploaded_file.name,
-        "content": pdf_text[:3000]
-    })
-
-    # Append to chat as message
     st.session_state["messages"].append({
         "role": "user",
-        "parts": f"Extracted from uploaded PDF ({uploaded_file.name}):\n{pdf_text[:3000]}"
+        "parts": f"Extracted from uploaded PDF:\n{pdf_text[:3000]}"
     })
+    st.session_state["pdf_uploaded"] = True
     st.rerun()
-
-# Show list of uploaded documents
-if st.session_state.get("uploaded_docs"):
-    st.markdown("📎 **Uploaded Documents:**")
-    for doc in st.session_state["uploaded_docs"]:
-        st.markdown(f"- `{doc['filename']}`")
