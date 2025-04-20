@@ -101,20 +101,17 @@ if uploaded_file:
     reader = PdfReader(uploaded_file)
     pdf_text = "\n\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
 
-    # Store uploaded document text in session (optional logic)
-    if not st.session_state.get("uploaded_docs"):
-        st.session_state["uploaded_docs"] = []
-
+    # Save uploaded doc info
     st.session_state["uploaded_docs"].append({
         "filename": uploaded_file.name,
         "content": pdf_text[:3000]
     })
 
+    # Append to chat as message
     st.session_state["messages"].append({
         "role": "user",
-        "parts": f"Extracted from uploaded PDF:\n{pdf_text[:3000]}"
+        "parts": f"Extracted from uploaded PDF ({uploaded_file.name}):\n{pdf_text[:3000]}"
     })
-
     st.rerun()
 
 # Later usage
