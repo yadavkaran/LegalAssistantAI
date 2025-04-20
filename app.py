@@ -43,6 +43,22 @@ if "input_submitted" not in st.session_state:
 if "pdf_uploaded" not in st.session_state:
     st.session_state["pdf_uploaded"] = False
 
+
+# Sidebar with uploaded documents
+st.sidebar.header("📄 Uploaded Documents")
+if st.session_state["uploaded_docs"]:
+    for doc in st.session_state["uploaded_docs"]:
+        st.sidebar.markdown(f"- {doc}")
+else:
+    st.sidebar.markdown("_No documents uploaded yet._")
+
+# Reset chat button
+if st.button("🗑️ Reset Chat"):
+    st.session_state["messages"] = [system_prompt]
+    st.session_state["uploaded_docs"] = []
+    st.rerun()
+	
+	
 # Title
 st.title("📚 VD - Compliance & Legal Assistant")
 st.markdown("💼 I can help with regulations, drafting documents, summaries, and more.")
@@ -81,12 +97,14 @@ if st.session_state["input_submitted"]:
 # PDF uploader section (after input)
 uploaded_file = st.file_uploader("📄 Upload a PDF (e.g., contract, policy, legal doc)", type=["pdf"])
 
-if uploaded_file and not st.session_state["pdf_uploaded"]:
-    reader = PdfReader(uploaded_file)
-    pdf_text = "\n\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
-    st.session_state["messages"].append({
-        "role": "user",
-        "parts": f"Extracted from uploaded PDF:\n{pdf_text[:3000]}"
-    })
-    st.session_state["pdf_uploaded"] = True
-    st.rerun()
+if uploaded_file:
+    file_name = uploaded_file.name
+    if file_name not in st.session_state["uploaded_docs"]:
+        reader = PdfReader(uploaded_file)
+        pdf_text = "\n\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
+        st.session_state["messages"].append({
+            "role": "user",
+            "parts": f"Extracted from uploaded PDF '{file_name}':\n{pdf_text[:3000]}"
+        })
+        st.session_state["uploaded_docs"].append(file_name)
+        st.rerun()
