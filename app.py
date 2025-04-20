@@ -1,7 +1,6 @@
 import streamlit as st
 import google.generativeai as genai
 import os
-import base64
 import uuid
 from PyPDF2 import PdfReader
 
@@ -31,49 +30,30 @@ Guidelines for responses:
 Default jurisdiction: United States (unless the user specifies otherwise).
 """
 }
+
+# Initialize session state
 if "user_id" not in st.session_state:
     st.session_state["user_id"] = str(uuid.uuid4())
-
 if "messages" not in st.session_state:
     st.session_state["messages"] = [system_prompt]
-
 if "input_submitted" not in st.session_state:
     st.session_state["input_submitted"] = False
-
-if "pdf_uploaded" not in st.session_state:
-    st.session_state["pdf_uploaded"] = []
-
-
-# Sidebar with uploaded documents
-st.sidebar.header("📄 Uploaded Documents")
-if st.session_state["uploaded_docs"]:
-    for doc in st.session_state["uploaded_docs"]:
-        st.sidebar.markdown(f"- {doc}")
-else:
-    st.sidebar.markdown("_No documents uploaded yet._")
-
-# Reset chat button
-if st.button("🗑️ Reset Chat"):
-    st.session_state["messages"] = [system_prompt]
+if "uploaded_docs" not in st.session_state:
     st.session_state["uploaded_docs"] = []
-    st.rerun()
-	
-	
-# Title
-st.title("📚 VD - Compliance & Legal Assistant")
+
+# UI
+st.title("📚 Compliance & Legal Assistant")
 st.markdown("💼 I can help with regulations, drafting documents, summaries, and more.")
 
-# Display messages
+# Display chat history
 for msg in st.session_state["messages"][1:]:
     role = "🧑" if msg["role"] == "user" else "🤖"
     st.markdown(f"**{role}:** {msg['parts']}")
 
-# Chat Input
-user_input = st.text_input(
-    "💬 How can I assist you today?",
-    key=f"chat_input_{len(st.session_state['messages'])}"
-)
+# Chat input (with dynamic key)
+user_input = st.text_input("💬 How can I assist you today?", key=f"chat_input_{len(st.session_state['messages'])}")
 
+# Handle user input
 if user_input and not st.session_state["input_submitted"]:
     st.session_state["messages"].append({"role": "user", "parts": user_input})
     try:
@@ -94,8 +74,8 @@ if user_input and not st.session_state["input_submitted"]:
 if st.session_state["input_submitted"]:
     st.session_state["input_submitted"] = False
 
-# PDF Upload section
-uploaded_file = st.file_uploader("📄 Upload a PDF", type=["pdf"])
+# PDF upload
+uploaded_file = st.file_uploader("📄 Upload a PDF (e.g., contract, policy, legal doc)", type=["pdf"])
 
 if uploaded_file:
     reader = PdfReader(uploaded_file)
@@ -114,8 +94,8 @@ if uploaded_file:
     })
     st.rerun()
 
-# Later usage
+# Show list of uploaded documents
 if st.session_state.get("uploaded_docs"):
-    st.markdown("📎 **Uploaded Documents**")
+    st.markdown("📎 **Uploaded Documents:**")
     for doc in st.session_state["uploaded_docs"]:
-        st.markdown(f"- {doc['filename']}")
+        st.markdown(f"- `{doc['filename']}`")
