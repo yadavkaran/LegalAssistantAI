@@ -51,22 +51,26 @@ if uploaded_file:
     pdf_text = "\n\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
     st.session_state["messages"].append({"role": "user", "parts": f"Extracted from uploaded PDF:\n{pdf_text[:3000]}"})  # Truncate if long
 
-# Chat Input
+# Display previous chat messages first (from oldest to newest)
+for msg in st.session_state["messages"][1:]:
+    role = "🧑" if msg["role"] == "user" else "🤖"
+    st.markdown(f"**{role}:** {msg['parts']}")
+
+# Chat Input at the bottom
 user_input = st.text_input("💬 How can I assist you today?", key="chat_input")
 
-# Chat Response
+# Process input and generate response
 if user_input:
     st.session_state["messages"].append({"role": "user", "parts": user_input})
     try:
         response = model.generate_content(st.session_state["messages"])
         st.session_state["messages"].append({"role": "model", "parts": response.text})
         # Log to file
-        with open(f"logs/{st.session_state['user_id']}.txt", "a") as f:
+        os.makedirs("logs", exist_ok=True)
+        with open(f"logs/{st.session_state['user_id']}.txt", "a", encoding="utf-8") as f:
             f.write(f"\nUser: {user_input}\nBot: {response.text}\n")
+        # Clear input field after submission
+        st.experimental_rerun()
     except Exception as e:
         st.error(f"Error: {str(e)}")
 
-# Display messages
-for msg in st.session_state["messages"][1:]:
-    role = "🧑" if msg["role"] == "user" else "🤖"
-    st.markdown(f"**{role}:** {msg['parts']}")
