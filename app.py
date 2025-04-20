@@ -7,7 +7,7 @@ from PyPDF2 import PdfReader
 
 # Configure API
 genai.configure(api_key=st.secrets["API_KEY"])
-model = genai.GenerativeModel("gemini-1.5-pro")
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 # System prompt
 system_prompt = {
