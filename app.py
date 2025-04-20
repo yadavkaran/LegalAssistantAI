@@ -41,7 +41,7 @@ if "input_submitted" not in st.session_state:
     st.session_state["input_submitted"] = False
 
 if "pdf_uploaded" not in st.session_state:
-    st.session_state["pdf_uploaded"] = False
+    st.session_state["pdf_uploaded"] = []
 
 
 # Sidebar with uploaded documents
