@@ -70,7 +70,7 @@ if user_input:
         with open(f"logs/{st.session_state['user_id']}.txt", "a", encoding="utf-8") as f:
             f.write(f"\nUser: {user_input}\nBot: {response.text}\n")
         # Clear input field after submission
-        st.experimental_rerun()
+        st.rerun()
     except Exception as e:
         st.error(f"Error: {str(e)}")
 
