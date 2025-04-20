@@ -7,7 +7,7 @@ from PyPDF2 import PdfReader
 
 # Configure API
 genai.configure(api_key=st.secrets["API_KEY"])
-model = genai.GenerativeModel("gemini-1.5-flash")
+model = genai.GenerativeModel("gemini-1.5-pro")
 
 # System prompt
 system_prompt = {
@@ -31,46 +31,54 @@ Guidelines for responses:
 Default jurisdiction: United States (unless the user specifies otherwise).
 """
 }
-
-# Get unique user ID
 if "user_id" not in st.session_state:
     st.session_state["user_id"] = str(uuid.uuid4())
-
-# Init session messages
 if "messages" not in st.session_state:
     st.session_state["messages"] = [system_prompt]
+if "input_submitted" not in st.session_state:
+    st.session_state["input_submitted"] = False
+if "pdf_uploaded" not in st.session_state:
+    st.session_state["pdf_uploaded"] = False
 
-# UI
+# Title
 st.title("📚 Compliance & Legal Assistant")
 st.markdown("💼 I can help with regulations, drafting documents, summaries, and more.")
 
-# Display previous chat messages first (from oldest to newest)
+# Display messages
 for msg in st.session_state["messages"][1:]:
     role = "🧑" if msg["role"] == "user" else "🤖"
     st.markdown(f"**{role}:** {msg['parts']}")
 
-# Chat Input at the bottom
+# Chat Input
 user_input = st.text_input("💬 How can I assist you today?", key="chat_input")
 
-# Process input and generate response
-if user_input:
+if user_input and not st.session_state["input_submitted"]:
     st.session_state["messages"].append({"role": "user", "parts": user_input})
     try:
         response = model.generate_content(st.session_state["messages"])
         st.session_state["messages"].append({"role": "model", "parts": response.text})
-        # Log to file
         os.makedirs("logs", exist_ok=True)
         with open(f"logs/{st.session_state['user_id']}.txt", "a", encoding="utf-8") as f:
             f.write(f"\nUser: {user_input}\nBot: {response.text}\n")
-        # Clear input field after submission
+        st.session_state["input_submitted"] = True
         st.rerun()
     except Exception as e:
         st.error(f"Error: {str(e)}")
 
+# Reset the flag after rerun
+if st.session_state["input_submitted"]:
+    st.session_state["input_submitted"] = False
+    st.session_state["chat_input"] = ""
+
+# File uploader
 uploaded_file = st.file_uploader("📄 Upload a PDF (e.g., contract, policy, legal doc)", type=["pdf"])
-if uploaded_file:
+
+if uploaded_file and not st.session_state["pdf_uploaded"]:
     reader = PdfReader(uploaded_file)
     pdf_text = "\n\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
-    st.session_state["messages"].append({"role": "user", "parts": f"Extracted from uploaded PDF:\n{pdf_text[:3000]}"})
+    st.session_state["messages"].append({
+        "role": "user",
+        "parts": f"Extracted from uploaded PDF:\n{pdf_text[:3000]}"
+    })
+    st.session_state["pdf_uploaded"] = True
     st.rerun()
-
