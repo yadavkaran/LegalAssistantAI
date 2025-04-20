@@ -1,12 +1,9 @@
 import streamlit as st
 import google.generativeai as genai
 import os
+import base64
 import uuid
 from PyPDF2 import PdfReader
-
-# Optional: Ensure logs folder exists
-if not os.path.exists("logs"):
-    os.makedirs("logs")
 
 # Configure API
 genai.configure(api_key=st.secrets["API_KEY"])
@@ -35,53 +32,41 @@ Default jurisdiction: United States (unless the user specifies otherwise).
 """
 }
 
-# Initialize session state
+# Get unique user ID
 if "user_id" not in st.session_state:
     st.session_state["user_id"] = str(uuid.uuid4())
 
+# Init session messages
 if "messages" not in st.session_state:
     st.session_state["messages"] = [system_prompt]
 
-# App UI
+# UI
 st.title("📚 Compliance & Legal Assistant Chatbot")
 st.markdown("💼 I can help with regulations, drafting documents, summaries, and more.")
 
-# File Upload (PDF)
+# PDF Upload
 uploaded_file = st.file_uploader("📄 Upload a PDF (e.g., contract, policy, legal doc)", type=["pdf"])
 if uploaded_file:
     reader = PdfReader(uploaded_file)
     pdf_text = "\n\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
-    # Only take the first 3000 characters for token limit
-    truncated_pdf_text = pdf_text[:3000]
-    st.session_state["messages"].append({
-        "role": "user",
-        "parts": f"Extracted from uploaded PDF:\n{truncated_pdf_text}"
-    })
-    st.success("✅ PDF content added to the conversation!")
+    st.session_state["messages"].append({"role": "user", "parts": f"Extracted from uploaded PDF:\n{pdf_text[:3000]}"})  # Truncate if long
 
-# Display chat history (except system prompt)
-for msg in st.session_state["messages"][1:]:
-    role = "🧑" if msg["role"] == "user" else "🤖"
-    st.markdown(f"**{role}:** {msg['parts']}")
+# Chat Input
+user_input = st.text_input("💬 How can I assist you today?", key="chat_input")
 
-# Input at bottom
-with st.form("chat_form", clear_on_submit=True):
-    user_input = st.text_input("💬 Ask a legal or compliance question:")
-    submitted = st.form_submit_button("Send")
-
-if submitted and user_input:
+# Chat Response
+if user_input:
     st.session_state["messages"].append({"role": "user", "parts": user_input})
     try:
         response = model.generate_content(st.session_state["messages"])
-        reply_text = response.text
-        st.session_state["messages"].append({"role": "model", "parts": reply_text})
-
-        # Save conversation log
-        log_file = f"logs/{st.session_state['user_id']}.txt"
-        with open(log_file, "a", encoding="utf-8") as f:
-            f.write(f"\nUser: {user_input}\nBot: {reply_text}\n")
-
-        st.experimental_rerun()
-
+        st.session_state["messages"].append({"role": "model", "parts": response.text})
+        # Log to file
+        with open(f"logs/{st.session_state['user_id']}.txt", "a") as f:
+            f.write(f"\nUser: {user_input}\nBot: {response.text}\n")
     except Exception as e:
-        st.error(f"❌ Error: {str(e)}")
+        st.error(f"Error: {str(e)}")
+
+# Display messages
+for msg in st.session_state["messages"][1:]:
+    role = "🧑" if msg["role"] == "user" else "🤖"
+    st.markdown(f"**{role}:** {msg['parts']}")
