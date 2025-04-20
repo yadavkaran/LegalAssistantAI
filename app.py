@@ -1,18 +1,30 @@
 import streamlit as st
 import google.generativeai as genai
+import dotenv
 import os
-import base64
-import uuid
-from PyPDF2 import PdfReader
 
-# Configure API
-genai.configure(api_key=st.secrets["API_KEY"])
-model = genai.GenerativeModel("gemini-1.5-pro")
+# Load environment variables from .env
+dotenv.load_dotenv()
+api_key = os.getenv("API_KEY")
 
-# System prompt
-system_prompt = {
-    "role": "user",
-    "parts": """
+# Configure the Gemini model
+genai.configure(api_key=api_key)
+model = genai.GenerativeModel("gemini-1.5-flash")
+
+# Function to generate a response from Gemini
+def generate_response(messages):
+    try:
+        response = model.generate_content(messages)
+        return response.text if hasattr(response, "text") else str(response)
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+# Initialize chat history in session
+if "messages" not in st.session_state:
+    st.session_state.messages = [
+        {
+            "role": "user",
+            "parts": """
 You are a Compliance and Legal Assistant expert, purpose-built to support legal professionals, compliance officers, and corporate teams in the United States. You possess comprehensive knowledge of U.S. corporate law, data protection regulations, financial compliance frameworks, and sector-specific obligations.
 
 Your core responsibilities include:
@@ -30,43 +42,30 @@ Guidelines for responses:
 
 Default jurisdiction: United States (unless the user specifies otherwise).
 """
-}
+        }
+    ]
 
-# Get unique user ID
-if "user_id" not in st.session_state:
-    st.session_state["user_id"] = str(uuid.uuid4())
+# App title
+st.title("🧑‍⚖️ Compliance & Legal Assistant")
 
-# Init session messages
-if "messages" not in st.session_state:
-    st.session_state["messages"] = [system_prompt]
+# Chat display (history)
+for message in st.session_state.messages[1:]:  # Skip system prompt
+    if message["role"] == "user":
+        st.markdown(f"**You:** {message['parts']}")
+    else:
+        st.markdown(f"**Assistant:** {message['parts']}")
 
-# UI
-st.title("📚 Compliance & Legal Assistant Chatbot")
-st.markdown("💼 I can help with regulations, drafting documents, summaries, and more.")
+# Divider and input at the bottom
+st.markdown("---")
 
-# PDF Upload
-uploaded_file = st.file_uploader("📄 Upload a PDF (e.g., contract, policy, legal doc)", type=["pdf"])
-if uploaded_file:
-    reader = PdfReader(uploaded_file)
-    pdf_text = "\n\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
-    st.session_state["messages"].append({"role": "user", "parts": f"Extracted from uploaded PDF:\n{pdf_text[:3000]}"})  # Truncate if long
+# Text input box at the bottom
+user_input = st.text_area("Type your legal or compliance question:", height=100)
 
-# Chat Input
-user_input = st.text_input("💬 How can I assist you today?", key="chat_input")
-
-# Chat Response
-if user_input:
-    st.session_state["messages"].append({"role": "user", "parts": user_input})
-    try:
-        response = model.generate_content(st.session_state["messages"])
-        st.session_state["messages"].append({"role": "model", "parts": response.text})
-        # Log to file
-        with open(f"logs/{st.session_state['user_id']}.txt", "a") as f:
-            f.write(f"\nUser: {user_input}\nBot: {response.text}\n")
-    except Exception as e:
-        st.error(f"Error: {str(e)}")
-
-# Display messages
-for msg in st.session_state["messages"][1:]:
-    role = "🧑" if msg["role"] == "user" else "🤖"
-    st.markdown(f"**{role}:** {msg['parts']}")
+# Button to send input
+if st.button("Send"):
+    if user_input.strip():
+        st.session_state.messages.append({"role": "user", "parts": user_input})
+        with st.spinner("Thinking..."):
+            bot_response = generate_response(st.session_state.messages)
+        st.session_state.messages.append({"role": "assistant", "parts": bot_response})
+        st.experimental_rerun()  # Refresh the app to show new messages
