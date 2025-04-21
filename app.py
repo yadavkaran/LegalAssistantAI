@@ -58,7 +58,7 @@ def home():
     with st.sidebar:
         st.subheader("🧠 VD - Legal Assistant")
         st.markdown(horizontal_bar, True)
-        sidebar_logo = Image.open("assets/vd_landing.png").resize((300, 390))
+        sidebar_logo = Image.open("vd.jpg").resize((300, 390))
         st.image(sidebar_logo, use_column_width='auto')
 
         st.markdown("""
