@@ -1,5 +1,4 @@
 import streamlit as st
-from streamlit_speech_to_text import speech_to_text
 import google.generativeai as genai
 import uuid
 import os
@@ -8,6 +7,10 @@ from PyPDF2 import PdfReader
 # --- Configure Gemini ---
 genai.configure(api_key=st.secrets["API_KEY"])
 model = genai.GenerativeModel("gemini-2.0-flash")
+
+# --- Page Setup ---
+st.set_page_config(page_title="VD Legal Assistant", layout="wide")
+st.title("📚 VD - Compliance & Legal Assistant")
 
 # --- Session State ---
 if "user_id" not in st.session_state:
@@ -29,9 +32,56 @@ if "uploaded_docs" not in st.session_state:
 if "uploaded_texts" not in st.session_state:
     st.session_state["uploaded_texts"] = {}
 
-# --- Page Config ---
-st.set_page_config(page_title="VD Legal Assistant", layout="wide")
-st.title("📚 VD - Compliance & Legal Assistant")
+# --- Custom CSS & JS ---
+st.markdown("""
+<style>
+#right-panel {
+    position: fixed;
+    top: 75px;
+    right: 0;
+    width: 320px;
+    height: 90%;
+    background-color: #f9f9f9;
+    border-left: 1px solid #ddd;
+    padding: 15px;
+    overflow-y: auto;
+    z-index: 999;
+}
+.pdf-preview {
+    white-space: pre-wrap;
+    font-size: 0.85rem;
+    max-height: 150px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+}
+</style>
+
+<script>
+function startDictation() {
+    if (window.hasOwnProperty('webkitSpeechRecognition')) {
+        const recognition = new webkitSpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = "en-US";
+        recognition.start();
+
+        recognition.onresult = function(e) {
+            const transcript = e.results[0][0].transcript;
+            const inputBox = window.parent.document.querySelector('input[type="text"]');
+            inputBox.value = transcript;
+            inputBox.dispatchEvent(new Event('input', { bubbles: true }));
+            recognition.stop();
+        };
+
+        recognition.onerror = function(e) {
+            recognition.stop();
+        };
+    } else {
+        alert("Speech recognition only works in Google Chrome.");
+    }
+}
+</script>
+""", unsafe_allow_html=True)
 
 # --- Reset Chat ---
 if st.button("🗑️ Reset Chat"):
@@ -40,19 +90,17 @@ if st.button("🗑️ Reset Chat"):
     st.session_state["uploaded_texts"] = {}
     st.rerun()
 
-# --- Display Chat ---
+# --- Display Chat History ---
 for msg in st.session_state["messages"][1:]:
     role = "🧑" if msg["role"] == "user" else "🤖"
     st.markdown(f"**{role}:** {msg['parts']}")
 
-# --- Voice + Text Input ---
-st.markdown("## 🎤 Speak or Type Your Message")
-voice_text = speech_to_text(label="🎙️ Speak", use_container_width=True)
-typed_text = st.text_input("Or type here", key=f"chat_input_{len(st.session_state['messages'])}")
+# --- Voice Button + Text Input
+st.markdown("## 🎙️ Speak or Type Below")
+st.markdown('<button onclick="startDictation()" style="padding:10px; margin-bottom:10px;">🎙️ Click to Speak</button>', unsafe_allow_html=True)
+user_input = st.text_input("Or type here")
 
-user_input = voice_text or typed_text
-
-# --- Process Input ---
+# --- Handle Input
 if user_input:
     st.session_state["messages"].append({"role": "user", "parts": user_input})
 
@@ -69,7 +117,7 @@ if user_input:
     except Exception as e:
         st.error(f"Error: {str(e)}")
 
-# --- PDF Upload ---
+# --- PDF Upload
 uploaded_file = st.file_uploader("📄 Upload a PDF", type=["pdf"])
 if uploaded_file:
     file_name = uploaded_file.name
@@ -85,32 +133,8 @@ if uploaded_file:
         st.session_state["uploaded_texts"][file_name] = extracted
         st.rerun()
 
-# --- Floating Preview Panel ---
+# --- Floating PDF Preview Panel ---
 if st.session_state["uploaded_docs"]:
-    st.markdown("""
-    <style>
-    #right-panel {
-        position: fixed;
-        top: 75px;
-        right: 0;
-        width: 320px;
-        height: 90%;
-        background-color: #f9f9f9;
-        border-left: 1px solid #ddd;
-        padding: 15px;
-        overflow-y: auto;
-        z-index: 999;
-    }
-    .pdf-preview {
-        white-space: pre-wrap;
-        font-size: 0.85rem;
-        max-height: 150px;
-        overflow-y: auto;
-        margin-bottom: 20px;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
     preview_html = "<div id='right-panel'><h4>📄 Uploaded Docs</h4>"
     for doc in st.session_state["uploaded_docs"]:
         preview_html += f"<b>📘 {doc}</b><div class='pdf-preview'>{st.session_state['uploaded_texts'][doc][:3000]}</div>"
