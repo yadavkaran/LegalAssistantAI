@@ -19,9 +19,30 @@ st.session_state["theme"] = "dark" if toggle else "light"
 if st.session_state["theme"] == "dark":
     st.markdown("""
         <style>
-            body, .stApp { background-color: #121212; color: #e0e0e0; }
-            .css-18e3th9 { background-color: #1e1e1e; }
-            .css-1d391kg { color: white; }
+            body, .stApp {
+                background-color: #121212 !important;
+                color: #e0e0e0 !important;
+            }
+            .stMarkdown, .stText, .st-bw, .css-1d391kg, .css-10trblm, .css-1v3fvcr, .css-1cpxqw2 {
+                color: #e0e0e0 !important;
+            }
+            .stButton > button {
+                background-color: #333 !important;
+                color: #e0e0e0 !important;
+                border: 1px solid #555 !important;
+            }
+            .stTextInput > div > input {
+                background-color: #1e1e1e !important;
+                color: #e0e0e0 !important;
+            }
+            .stTextArea > div > textarea {
+                background-color: #1e1e1e !important;
+                color: #e0e0e0 !important;
+            }
+            .stSelectbox > div > div {
+                background-color: #1e1e1e !important;
+                color: #e0e0e0 !important;
+            }
         </style>
     """, unsafe_allow_html=True)
 
