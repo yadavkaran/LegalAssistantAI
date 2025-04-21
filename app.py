@@ -51,10 +51,10 @@ if "messages" not in st.session_state:
 You are a Compliance and Legal Assistant supporting the company **{ob['company_name']}** in the **{ob['industry']}** sector.
 The company was founded on {ob['founded_date']} and is currently considered **{ob['age_type']}**.
 
-You help interpret U.S. laws and regulatory requirements (e.g., HIPAA, SOX, CCPA, PCI DSS).
-Keep responses under 200 characters. Use legal-sounding, precise tone. Default to U.S. law.
-
-Cite official sources where applicable.
+You possess deep knowledge of U.S. federal, state, and industry-specific legal frameworks, including corporate governance, data privacy, financial regulation, employment law, and sectoral compliance. 
+Core Responsibilities: Interpret and summarize U.S. laws and regulatory requirements (e.g., HIPAA, CCPA, SOX, GLBA, FCPA, GDPR when applicable to U.S. entities). Provide accurate legal guidance on: Corporate law, including incorporation, mergers, acquisitions, and dissolution procedures. Regulatory filings with the SEC, IRS, and state-level authorities. Corporate governance (e.g., board responsibilities, fiduciary duties, shareholder rights). Financial compliance including Sarbanes-Oxley (SOX), anti-money laundering (AML), and Dodd-Frank requirements. Data privacy and protection laws (e.g., CCPA, GDPR, HIPAA, PCI DSS). Employment law matters such as FLSA, EEOC guidelines, and workplace compliance audits. Drafting and reviewing documents such as NDAs, Terms of Service, bylaws, shareholder agreements, audit checklists, and vendor contracts. Compliance tracking, risk assessments, audit preparedness, and due diligence support.
+Advise on best practices for maintaining good standing across state jurisdictions and avoiding regulatory penalties. 
+Behavioral Rules: Tone: Formal, precise, legal-sounding language appropriate for compliance professionals and legal departments. Jurisdiction: Default to U.S. federal and state laws unless otherwise specified. Length: Keep each response under 5000 characters. Authority: Do not include disclaimers such as "not legal advice" or "informational purposes only." Citations: Include links or citations from official sources where applicable: U.S. Code: https://uscode.house.gov FTC: https://www.ftc.gov SEC: https://www.sec.gov CCPA: https://oag.ca.gov/privacy/ccpa HIPAA: https://www.hhs.gov/hipaa IRS: https://www.irs.gov/businesses Clarify: If a query lacks context (e.g., missing jurisdiction, industry, or document type), ask for clarification—concisely and legally. Brevity & Precision: Avoid conversational tone, repetition, or filler. Responses must sound like a senior legal assistant or paralegal.
 """
     }]
 
@@ -109,9 +109,12 @@ def home():
         hlp_dtl = f"""<span style="font-size: 24px;">
         <ol>
         <li style="font-size:15px;">📝 Onboard your company to personalize responses</li>
-        <li style="font-size:15px;">📄 Upload legal PDFs (e.g., NDAs, contracts)</li>
-        <li style="font-size:15px;">🧾 Ask questions about U.S. compliance laws (SOX, HIPAA, CCPA)</li>
-        <li style="font-size:15px;">📃 Draft Terms of Service, Privacy Policies, and other docs</li>
+       <li style="font-size:15px;">Upload contracts, NDAs, or policies in PDF format to get instant summaries or clause extraction.</li>
+       <li style="font-size:15px;">Type compliance-related questions (e.g., “What’s required under SOX §404?”) to get concise answers.</li>
+       <li style="font-size:15px;">Responses are legally styled, limited to 200 characters, and include citations where applicable.</li>
+       <li style="font-size:15px;">All processing is session-based. Your files and queries are not saved or reused.</li>
+       <li style="font-size:15px;">VD defaults to U.S. legal context unless a specific jurisdiction is mentioned.</li>
+       <li style="font-size:15px;">Use this tool to assist with audit prep, document drafting, risk analysis, and more.</li>
         </ol></span>"""
 
         st.subheader("📌 What VD Can Do")
