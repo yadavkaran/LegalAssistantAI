@@ -72,7 +72,9 @@ model = genai.GenerativeModel("gemini-2.0-flash")
 def home():
     horizontal_bar = "<hr style='margin-top: 0; margin-bottom: 0; height: 1px; border: 1px solid #635985;'><br>"
 
+    # Sidebar with logo + onboarding
     with st.sidebar:
+        st.image("vdlogo.jpg", use_column_width=True)
         st.subheader("🧠 VD - Legal Assistant Onboarding")
         ob = st.session_state["onboarding_data"]
 
@@ -93,7 +95,7 @@ def home():
             st.markdown(f"**Founded:** {ob['founded_date']}")
             st.markdown("✅ Onboarding complete.")
 
-    # Main Landing Page Layout
+    # Main layout
     st.title("📚 Welcome to VD - Compliance & Legal Assistant")
     st.markdown(horizontal_bar, True)
 
@@ -101,15 +103,15 @@ def home():
 
     with col2:
         law_image = Image.open(random.choice(["vd1.jpg", "vd2.jpg", "VD.jpg"])).resize((550, 550))
-        st.image(law_image, use_container_width='auto')
+        st.image(law_image, use_column_width='auto')
 
     with col1:
         hlp_dtl = f"""<span style="font-size: 24px;">
         <ol>
-        <li style="font-size:15px;">Interpret U.S. corporate and privacy laws.</li>
-        <li style="font-size:15px;">Upload legal PDFs for instant analysis.</li>
-        <li style="font-size:15px;">Draft NDAs, Terms, and other documents.</li>
-        <li style="font-size:15px;">Responses under 200 characters. No filler. Precise legal tone.</li>
+        <li style="font-size:15px;">📝 Onboard your company to personalize responses</li>
+        <li style="font-size:15px;">📄 Upload legal PDFs (e.g., NDAs, contracts)</li>
+        <li style="font-size:15px;">🧾 Ask questions about U.S. compliance laws (SOX, HIPAA, CCPA)</li>
+        <li style="font-size:15px;">📃 Draft Terms of Service, Privacy Policies, and other docs</li>
         </ol></span>"""
 
         st.subheader("📌 What VD Can Do")
@@ -117,10 +119,9 @@ def home():
         st.markdown(hlp_dtl, unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
 
-        if st.session_state["onboarding_data"]["completed"]:
-            if st.button("💬 Ask VD", key="ask_vd"):
-                st.session_state.page = "chat"
-                st.rerun()
+        if st.button("💬 Ask VD", key="ask_vd_always"):
+            st.session_state.page = "chat"
+            st.rerun()
 
     st.markdown(horizontal_bar, True)
     st.markdown("🔒 This AI assistant does not give legal advice.", unsafe_allow_html=True)
