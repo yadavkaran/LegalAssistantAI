@@ -174,7 +174,7 @@ def show_chat():
         if file_name not in st.session_state["uploaded_docs"]:
             reader = PdfReader(uploaded_file)
             extracted = "\n\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
-            short_text = extracted[:3000]
+            short_text = extracted
             st.session_state["messages"].append({
                 "role": "user",
                 "parts": f"Extracted from uploaded PDF '{file_name}':\n{short_text}"
