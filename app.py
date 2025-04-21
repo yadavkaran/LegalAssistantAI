@@ -103,7 +103,7 @@ def home():
 
     st.markdown(horizontal_bar, True)
     st.markdown("🔒 This AI assistant does not give legal advice.", unsafe_allow_html=True)
-    st.markdown("<strong>Built by: 😎 Shawn Pereira</strong>", unsafe_allow_html=True)
+    st.markdown("<strong>Built by: 😎 KARAN YADAV, RUSHABH MAKWANA, ANISH AYARE</strong>", unsafe_allow_html=True)
 
     if st.button("💬 Ask VD"):
         st.session_state.page = "chat"
