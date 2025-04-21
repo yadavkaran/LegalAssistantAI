@@ -31,51 +31,41 @@ Guidelines for responses:
 Default jurisdiction: United States (unless the user specifies otherwise).
 """
 }
+# --- Session State Init ---
 if "user_id" not in st.session_state:
     st.session_state["user_id"] = str(uuid.uuid4())
-
 if "messages" not in st.session_state:
     st.session_state["messages"] = [system_prompt]
-
-if "input_submitted" not in st.session_state:
-    st.session_state["input_submitted"] = False
-
 if "uploaded_docs" not in st.session_state:
     st.session_state["uploaded_docs"] = []
-
 if "uploaded_texts" not in st.session_state:
     st.session_state["uploaded_texts"] = {}
 
+
 # --- Custom Styling ---
 st.markdown("""
-    <style>
-        #right-panel {
-            position: fixed;
-            top: 75px;
-            right: 0;
-            width: 320px;
-            height: 90%;
-            background-color: #f9f9f9;
-            border-left: 1px solid #ddd;
-            padding: 15px;
-            overflow-y: auto;
-            z-index: 999;
-        }
-        .pdf-preview {
-            white-space: pre-wrap;
-            font-size: 0.85rem;
-            max-height: 150px;
-            overflow-y: auto;
-            margin-bottom: 20px;
-        }
-        input, button {
-            font-size: 16px !important;
-        }
-    </style>
-""", unsafe_allow_html=True)
+<style>
+#right-panel {
+    position: fixed;
+    top: 75px;
+    right: 0;
+    width: 320px;
+    height: 90%;
+    background-color: #f9f9f9;
+    border-left: 1px solid #ddd;
+    padding: 15px;
+    overflow-y: auto;
+    z-index: 999;
+}
+.pdf-preview {
+    white-space: pre-wrap;
+    font-size: 0.85rem;
+    max-height: 150px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+}
+</style>
 
-# --- Voice Script with "Hey VD" ---
-st.markdown("""
 <script>
 function startDictation() {
     if (window.hasOwnProperty('webkitSpeechRecognition')) {
@@ -89,28 +79,23 @@ function startDictation() {
             var transcript = e.results[0][0].transcript.trim();
             if (transcript.toLowerCase().startsWith("hey vd")) {
                 var cleaned = transcript.substring(6).trim();
-                document.getElementById('voice_input').value = cleaned;
-                recognition.stop();
-                document.getElementById('voice_input_form').dispatchEvent(new Event('submit', { bubbles: true }));
+                const textBox = window.parent.document.querySelector('input[type="text"]');
+                textBox.value = cleaned;
+                textBox.dispatchEvent(new Event('input', { bubbles: true }));
             } else {
-                alert("❗ Voice command must start with 'Hey VD'");
-                recognition.stop();
+                alert("❗ Please start with 'Hey VD' to activate voice commands.");
             }
+            recognition.stop();
         };
 
         recognition.onerror = function(e) {
             recognition.stop();
         };
     } else {
-        alert("Speech recognition not supported. Please use Chrome.");
+        alert("Speech recognition not supported in this browser.");
     }
 }
 </script>
-
-<form id="voice_input_form">
-    <input type="text" id="voice_input" name="voice_input" placeholder="Say 'Hey VD ...'" style="width: 100%; padding: 10px;" />
-    <button type="button" onclick="startDictation()" style="margin-top: 10px; padding: 10px;">🎙️ Speak</button>
-</form>
 """, unsafe_allow_html=True)
 
 # --- Title + Reset ---
@@ -123,18 +108,18 @@ if st.button("🗑️ Reset Chat"):
     st.session_state["uploaded_texts"] = {}
     st.rerun()
 
-# --- Display chat messages ---
+# --- Display Messages ---
 for msg in st.session_state["messages"][1:]:
     role = "🧑" if msg["role"] == "user" else "🤖"
     st.markdown(f"**{role}:** {msg['parts']}")
 
-# --- Voice or Text Input Handler ---
-user_input = st.experimental_get_query_params().get("voice_input", [""])[0]
-if not user_input:
-    user_input = st.text_input("Or type your message", key=f"chat_input_{len(st.session_state['messages'])}")
+# --- Chat Input with Mic Button ---
+st.markdown("### 🎤 Speak or Type Below")
+st.markdown('<button onclick="startDictation()" style="padding:10px;">🎙️ Click to Speak</button>', unsafe_allow_html=True)
+user_input = st.text_input("💬 Type your message or use voice (start with 'Hey VD')")
 
-# --- Handle message ---
-if user_input and not st.session_state["input_submitted"]:
+# --- Process Chat ---
+if user_input:
     st.session_state["messages"].append({"role": "user", "parts": user_input})
     try:
         response = model.generate_content(st.session_state["messages"])
@@ -145,13 +130,9 @@ if user_input and not st.session_state["input_submitted"]:
             os.makedirs("logs", exist_ok=True)
             with open(f"logs/{st.session_state['user_id']}.txt", "a", encoding="utf-8") as f:
                 f.write(f"\nUser: {user_input}\nBot: {response.text}\n")
-        st.session_state["input_submitted"] = True
         st.rerun()
     except Exception as e:
         st.error(f"Error: {str(e)}")
-
-if st.session_state["input_submitted"]:
-    st.session_state["input_submitted"] = False
 
 # --- PDF Upload ---
 uploaded_file = st.file_uploader("📄 Upload a PDF", type=["pdf"])
@@ -169,7 +150,7 @@ if uploaded_file:
         st.session_state["uploaded_texts"][file_name] = extracted
         st.rerun()
 
-# --- Floating Right Panel for PDF Preview ---
+# --- PDF Preview Panel ---
 if st.session_state["uploaded_docs"]:
     preview_html = "<div id='right-panel'><h4>📄 Uploaded Docs</h4>"
     for doc in st.session_state["uploaded_docs"]:
