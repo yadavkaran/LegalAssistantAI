@@ -52,34 +52,56 @@ genai.configure(api_key=st.secrets["API_KEY"])
 model = genai.GenerativeModel("gemini-2.0-flash")
 
 # --- Page 1: Landing View ---
-def show_home():
-    st.title("🤖 Welcome to VD - Compliance & Legal Assistant")
-    st.markdown("""
-    <style>
-    .vd-banner {
-        font-size: 20px;
-        padding: 20px;
-        border: 1px solid #ccc;
-        border-radius: 10px;
-        background-color: rgba(240,240,240,0.7);
-        margin-bottom: 2rem;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+def home():
+    horizontal_bar = "<hr style='margin-top: 0; margin-bottom: 0; height: 1px; border: 1px solid #635985;'><br>"
 
-    st.markdown(f"""
-    <div class="vd-banner">
-        <strong>VD</strong> is your virtual legal compliance assistant.  
-        It helps with:
-        - 🧾 Regulatory summaries (e.g. SOX, HIPAA, CCPA)
-        - 📄 Document analysis (PDFs)
-        - ✍️ Drafting legal policies and checklists
-        - ❓ Answering legal/compliance questions (U.S.-focused)
+    with st.sidebar:
+        st.subheader("🧠 VD - Legal Assistant")
+        st.markdown(horizontal_bar, True)
+        sidebar_logo = Image.open("assets/vd_landing.png").resize((300, 390))
+        st.image(sidebar_logo, use_column_width='auto')
 
-        <br><br>
-        <i>Disclaimer: This app provides informational guidance only and does not constitute legal advice.</i>
-    </div>
-    """, unsafe_allow_html=True)
+        st.markdown("""
+        **What can VD do?**
+        - 🧾 Summarize regulations (SOX, HIPAA, CCPA)
+        - 📝 Draft NDAs, policies, checklists
+        - 📁 Analyze uploaded PDFs
+
+        _Disclaimer: AI-generated responses are informational only._
+        """, unsafe_allow_html=True)
+
+    # Help Content with PixMatch-style layout
+    hlp_dtl = f"""<span style="font-size: 24px;">
+    <ol>
+    <li style="font-size:15px;">VD helps you interpret U.S. corporate, privacy, and compliance laws.</li>
+    <li style="font-size:15px;">You can upload a PDF (e.g., contract, NDA, policy) and VD will summarize or extract key content.</li>
+    <li style="font-size:15px;">Ask questions like: “What does SOX require for financial reporting?”</li>
+    <li style="font-size:15px;">All queries and uploads are session-based and not stored permanently.</li>
+    <li style="font-size:15px;">This tool is for informational use and does not replace legal counsel.</li>
+    </ol></span>"""
+
+    st.title("📚 Welcome to VD - Compliance & Legal Assistant")
+    st.markdown(horizontal_bar, True)
+
+    col1, col2 = st.columns(2)
+
+    with col2:
+        law_image = Image.open("assets/" + random.choice(["law1.jpg", "law2.jpg", "law3.jpg"])).resize((550, 550))
+        st.image(law_image, use_column_width='auto')
+
+    with col1:
+        st.subheader("📌 How It Works")
+        st.markdown(horizontal_bar, True)
+        st.markdown(hlp_dtl, unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        if st.button("💬 Ask VD"):
+            st.session_state.page = "chat"
+            st.rerun()
+
+    st.markdown(horizontal_bar, True)
+    st.markdown("🔒 This AI assistant does not give legal advice.", unsafe_allow_html=True)
+    st.markdown("<strong>Built by: 😎 Shawn Pereira</strong>", unsafe_allow_html=True)
 
     if st.button("💬 Ask VD"):
         st.session_state.page = "chat"
