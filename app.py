@@ -88,7 +88,7 @@ def home():
     col1, col2 = st.columns(2)
 
     with col2:
-        law_image = Image.open(random.choice(["VD.jpg", "VD.jpg", "VD.jpg"])).resize((550, 550))
+        law_image = Image.open(random.choice(["vd1.jpg", "vd2.jpg", "vd3.jpg"])).resize((550, 550))
         st.image(law_image, use_container_width='auto')
 
     with col1:
