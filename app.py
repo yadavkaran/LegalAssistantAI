@@ -25,13 +25,14 @@ if st.session_state["theme"] == "dark":
         </style>
     """, unsafe_allow_html=True)
 
-# --- Session setup ---
+# --- State Setup ---
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
 if "user_id" not in st.session_state:
     st.session_state.user_id = str(uuid.uuid4())
 
+# Onboarding storage
 if "onboarding_data" not in st.session_state:
     st.session_state["onboarding_data"] = {
         "company_name": "",
@@ -41,20 +42,20 @@ if "onboarding_data" not in st.session_state:
         "completed": False
     }
 
+# Gemini messages (initialized after onboarding)
 if "messages" not in st.session_state:
     ob = st.session_state["onboarding_data"]
     st.session_state["messages"] = [{
         "role": "user",
         "parts": f"""
-You are a Compliance and Legal Assistant supporting the company **{ob.get('company_name', 'an organization')}** in the **{ob.get('industry', 'corporate')}** sector.
-The company was founded on {ob.get('founded_date', 'an unknown date')} and is considered **{ob.get('age_type', 'unclassified')}**.
+You are a Compliance and Legal Assistant supporting the company **{ob['company_name']}** in the **{ob['industry']}** sector.
+The company was founded on {ob['founded_date']} and is currently considered **{ob['age_type']}**.
 
-You possess deep knowledge of U.S. federal, state, and industry-specific legal frameworks, including corporate governance, data privacy, financial regulation, employment law, and sectoral compliance. 
-Core Responsibilities: Interpret and summarize U.S. laws and regulatory requirements (e.g., HIPAA, CCPA, SOX, GLBA, FCPA, GDPR when applicable to U.S. entities). Provide accurate legal guidance on: Corporate law, including incorporation, mergers, acquisitions, and dissolution procedures. Regulatory filings with the SEC, IRS, and state-level authorities. Corporate governance (e.g., board responsibilities, fiduciary duties, shareholder rights). Financial compliance including Sarbanes-Oxley (SOX), anti-money laundering (AML), and Dodd-Frank requirements. Data privacy and protection laws (e.g., CCPA, GDPR, HIPAA, PCI DSS). Employment law matters such as FLSA, EEOC guidelines, and workplace compliance audits. Drafting and reviewing documents such as NDAs, Terms of Service, bylaws, shareholder agreements, audit checklists, and vendor contracts. Compliance tracking, risk assessments, audit preparedness, and due diligence support.
-Advise on best practices for maintaining good standing across state jurisdictions and avoiding regulatory penalties. 
-Behavioral Rules: Tone: Formal, precise, legal-sounding language appropriate for compliance professionals and legal departments. Jurisdiction: Default to U.S. federal and state laws unless otherwise specified. Length: Keep each response under 5000 characters. Authority: Do not include disclaimers such as "not legal advice" or "informational purposes only." Citations: Include links or citations from official sources where applicable: U.S. Code: https://uscode.house.gov FTC: https://www.ftc.gov SEC: https://www.sec.gov CCPA: https://oag.ca.gov/privacy/ccpa HIPAA: https://www.hhs.gov/hipaa IRS: https://www.irs.gov/businesses Clarify: If a query lacks context (e.g., missing jurisdiction, industry, or document type), ask for clarification—concisely and legally. Brevity & Precision: Avoid conversational tone, repetition, or filler. Responses must sound like a senior legal assistant or paralegal.
+You help interpret U.S. laws and regulatory requirements (e.g., HIPAA, SOX, CCPA, PCI DSS).
+Keep responses under 200 characters. Use legal-sounding, precise tone. Default to U.S. law.
 
-        """
+Cite official sources where applicable.
+"""
     }]
 
 if "uploaded_docs" not in st.session_state:
@@ -67,40 +68,32 @@ if "uploaded_texts" not in st.session_state:
 genai.configure(api_key=st.secrets["API_KEY"])
 model = genai.GenerativeModel("gemini-2.0-flash")
 
-# --- Page 1: Landing View ---
+# --- Home Page with Onboarding ---
 def home():
     horizontal_bar = "<hr style='margin-top: 0; margin-bottom: 0; height: 1px; border: 1px solid #635985;'><br>"
 
     with st.sidebar:
         st.subheader("🧠 VD - Legal Assistant Onboarding")
+        ob = st.session_state["onboarding_data"]
 
-        if not st.session_state["onboarding_data"]["completed"]:
-            st.session_state["onboarding_data"]["company_name"] = st.text_input("🏢 What's your company name?", value=st.session_state["onboarding_data"]["company_name"])
-            st.session_state["onboarding_data"]["industry"] = st.text_input("💼 What industry are you in?", value=st.session_state["onboarding_data"]["industry"])
-            st.session_state["onboarding_data"]["age_type"] = st.selectbox("📈 Is the company new or established?", ["", "New", "Established"], index=["", "New", "Established"].index(st.session_state["onboarding_data"]["age_type"] or ""))
-            st.session_state["onboarding_data"]["founded_date"] = st.text_input("📅 When was it founded? (MM/DD/YYYY)", value=st.session_state["onboarding_data"]["founded_date"])
+        if not ob["completed"]:
+            ob["company_name"] = st.text_input("🏢 What's your company name?", value=ob["company_name"])
+            ob["industry"] = st.text_input("💼 What industry are you in?", value=ob["industry"])
+            ob["age_type"] = st.selectbox("📈 Is your company new or established?", ["", "New", "Established"], index=["", "New", "Established"].index(ob["age_type"]) if ob["age_type"] else 0)
+            ob["founded_date"] = st.text_input("📅 When was it founded? (MM/DD/YYYY)", value=ob["founded_date"])
 
-            if all(st.session_state["onboarding_data"].values()):
-                if st.button("✅ Submit"):
-                    st.session_state["onboarding_data"]["completed"] = True
-                    st.success("🎉 Onboarding complete. You may now Ask VD!")
+            if all([ob["company_name"], ob["industry"], ob["age_type"], ob["founded_date"]]):
+                if st.button("✅ Submit Onboarding", key="submit_onboarding"):
+                    ob["completed"] = True
+                    st.success("🎉 Onboarding complete. Click 'Ask VD' to continue.")
                     st.rerun()
         else:
-            ob = st.session_state["onboarding_data"]
             st.markdown(f"**Company:** {ob['company_name']}")
             st.markdown(f"**Industry:** {ob['industry']}")
             st.markdown(f"**Founded:** {ob['founded_date']}")
-            st.markdown("✅ Onboarding Complete")
+            st.markdown("✅ Onboarding complete.")
 
-    # Help + Info Layout
-    hlp_dtl = f"""<span style="font-size: 24px;">
-    <ol>
-    <li style="font-size:15px;">VD helps interpret U.S. laws: SOX, HIPAA, CCPA, and more.</li>
-    <li style="font-size:15px;">Upload policies or contracts for instant summaries.</li>
-    <li style="font-size:15px;">Draft NDAs, T&Cs, Privacy Policies using AI support.</li>
-    <li style="font-size:15px;">Works best with clear company and document context.</li>
-    </ol></span>"""
-
+    # Main Landing Page Layout
     st.title("📚 Welcome to VD - Compliance & Legal Assistant")
     st.markdown(horizontal_bar, True)
 
@@ -111,36 +104,45 @@ def home():
         st.image(law_image, use_container_width='auto')
 
     with col1:
-        st.subheader("📌 How It Works")
+        hlp_dtl = f"""<span style="font-size: 24px;">
+        <ol>
+        <li style="font-size:15px;">Interpret U.S. corporate and privacy laws.</li>
+        <li style="font-size:15px;">Upload legal PDFs for instant analysis.</li>
+        <li style="font-size:15px;">Draft NDAs, Terms, and other documents.</li>
+        <li style="font-size:15px;">Responses under 200 characters. No filler. Precise legal tone.</li>
+        </ol></span>"""
+
+        st.subheader("📌 What VD Can Do")
         st.markdown(horizontal_bar, True)
         st.markdown(hlp_dtl, unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
 
         if st.session_state["onboarding_data"]["completed"]:
-            if st.button("💬 Ask VD", key="start_chat_btn"):
+            if st.button("💬 Ask VD", key="ask_vd"):
                 st.session_state.page = "chat"
                 st.rerun()
 
     st.markdown(horizontal_bar, True)
-    st.markdown("🔒 This assistant does not give legal advice.", unsafe_allow_html=True)
+    st.markdown("🔒 This AI assistant does not give legal advice.", unsafe_allow_html=True)
     st.markdown("<strong>Built by: 😎 KARAN YADAV, RUSHABH MAKWANA, ANISH AYARE</strong>", unsafe_allow_html=True)
 
-# --- Page 2: Chatbot View ---
+# --- Chat Page ---
 def show_chat():
+    ob = st.session_state["onboarding_data"]
     st.title("📚 VD - Legal Chat Assistant")
-    st.markdown(f"### 🏢 Company: **{st.session_state['onboarding_data'].get('company_name', '')}**")
+    if ob["company_name"]:
+        st.markdown(f"### 🏢 {ob['company_name']} ({ob['industry']})")
 
-    if st.button("🔙 Back to Home"):
+    if st.button("🔙 Back to Home", key="go_home"):
         st.session_state.page = "home"
         st.rerun()
 
-    if st.button("🗑️ Reset Chat"):
+    if st.button("🗑️ Reset Chat", key="reset_chat"):
         st.session_state["messages"] = [st.session_state["messages"][0]]
         st.session_state["uploaded_docs"] = []
         st.session_state["uploaded_texts"] = {}
         st.rerun()
 
-    # Chat history
     for msg in st.session_state["messages"][1:]:
         role = "🧑" if msg["role"] == "user" else "🤖"
         st.markdown(f"**{role}:** {msg['parts']}")
@@ -160,7 +162,6 @@ def show_chat():
         except Exception as e:
             st.error(f"Error: {str(e)}")
 
-    # PDF upload
     uploaded_file = st.file_uploader("📄 Upload a PDF", type=["pdf"])
     if uploaded_file:
         file_name = uploaded_file.name
@@ -176,7 +177,6 @@ def show_chat():
             st.session_state["uploaded_texts"][file_name] = extracted
             st.rerun()
 
-    # Preview Panel
     if st.session_state["uploaded_docs"]:
         st.markdown("""
         <style>
@@ -208,7 +208,7 @@ def show_chat():
         preview_html += "</div>"
         st.markdown(preview_html, unsafe_allow_html=True)
 
-# --- Run the correct page ---
+# --- Run App ---
 if st.session_state.page == "home":
     home()
 else:
