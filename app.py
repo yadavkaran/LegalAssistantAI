@@ -16,7 +16,7 @@ if "theme" not in st.session_state:
 toggle = st.toggle("🌙 Dark Mode" if st.session_state["theme"] == "light" else "☀️ Light Mode", value=(st.session_state["theme"] == "dark"))
 st.session_state["theme"] = "dark" if toggle else "light"
 
-  st.markdown("""
+st.markdown("""
         <style>
         html, body, .stApp {
             background-color: #121212 !important;
