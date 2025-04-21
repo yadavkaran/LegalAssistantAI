@@ -58,7 +58,6 @@ st.markdown("""
 
 <script>
 st.markdown("""
-<script>
 function startDictation() {
     try {
         if (window.hasOwnProperty('webkitSpeechRecognition')) {
