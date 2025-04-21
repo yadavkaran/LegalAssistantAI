@@ -1,21 +1,17 @@
 import streamlit as st
-from streamlit_speech_to_text import speech_to_text
 import google.generativeai as genai
-import uuid
 import os
+import base64
+import uuid
 from PyPDF2 import PdfReader
 
-# --- Configure Gemini ---
+# Configure API
 genai.configure(api_key=st.secrets["API_KEY"])
 model = genai.GenerativeModel("gemini-2.0-flash")
 
-# --- Session Setup ---
-if "user_id" not in st.session_state:
-    st.session_state["user_id"] = str(uuid.uuid4())
-
-if "messages" not in st.session_state:
-    st.session_state["messages"] = [{
-       "role": "user",
+# System prompt
+system_prompt = {
+    "role": "user",
     "parts": """
 You are a Compliance and Legal Assistant expert, purpose-built to support legal professionals, compliance officers, and corporate teams in the United States. You possess comprehensive knowledge of U.S. corporate law, data protection regulations, financial compliance frameworks, and sector-specific obligations.
 
@@ -34,7 +30,15 @@ Guidelines for responses:
 
 Default jurisdiction: United States (unless the user specifies otherwise).
 """
-    }]
+}
+if "user_id" not in st.session_state:
+    st.session_state["user_id"] = str(uuid.uuid4())
+
+if "messages" not in st.session_state:
+    st.session_state["messages"] = [system_prompt]
+
+if "input_submitted" not in st.session_state:
+    st.session_state["input_submitted"] = False
 
 if "uploaded_docs" not in st.session_state:
     st.session_state["uploaded_docs"] = []
@@ -42,51 +46,68 @@ if "uploaded_docs" not in st.session_state:
 if "uploaded_texts" not in st.session_state:
     st.session_state["uploaded_texts"] = {}
 
-# --- UI ---
-st.set_page_config(page_title="VD Legal Assistant", layout="wide")
-st.title("📚 VD - Compliance & Legal Assistant")
+# Inject custom CSS for floating preview on right margin
+st.markdown("""
+    <style>
+        #right-panel {
+            position: fixed;
+            top: 75px;
+            right: 0;
+            width: 300px;
+            height: 90%;
+            background-color: #f9f9f9;
+            border-left: 1px solid #ddd;
+            padding: 15px;
+            overflow-y: auto;
+            z-index: 999;
+        }
+        .pdf-preview {
+            white-space: pre-wrap;
+            font-size: 0.85rem;
+            max-height: 150px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+    </style>
+""", unsafe_allow_html=True)
 
-# --- Reset Chat ---
+# Title + reset button
+st.title("📚 VD - Compliance & Legal Assistant")
+st.markdown("💼 I can help with regulations, drafting documents, summaries, and more.")
+
 if st.button("🗑️ Reset Chat"):
-    st.session_state["messages"] = [st.session_state["messages"][0]]
+    st.session_state["messages"] = [system_prompt]
     st.session_state["uploaded_docs"] = []
     st.session_state["uploaded_texts"] = {}
     st.rerun()
 
-# --- Display Chat History ---
+# Display chat history
 for msg in st.session_state["messages"][1:]:
     role = "🧑" if msg["role"] == "user" else "🤖"
     st.markdown(f"**{role}:** {msg['parts']}")
 
-# --- Voice Input ---
-st.markdown("## 🎤 Speak or Type Below")
-voice_text = speech_to_text(label="🎙️ Click to Speak", use_container_width=True)
-typed_text = st.text_input("Or type your message", key=f"chat_input_{len(st.session_state['messages'])}")
+# Chat input
+user_input = st.text_input("💬 How can I assist you today?", key=f"chat_input_{len(st.session_state['messages'])}")
 
-user_input = voice_text or typed_text
+if user_input and not st.session_state["input_submitted"]:
+    st.session_state["messages"].append({"role": "user", "parts": user_input})
+    try:
+        response = model.generate_content(st.session_state["messages"])
+        st.session_state["messages"].append({"role": "model", "parts": response.text})
 
-# --- Process Message if input starts with "Hey VD" ---
-if user_input:
-    if user_input.lower().startswith("hey vd"):
-        cleaned_input = user_input[6:].strip()
-        st.session_state["messages"].append({"role": "user", "parts": cleaned_input})
+        os.makedirs("logs", exist_ok=True)
+        with open(f"logs/{st.session_state['user_id']}.txt", "a", encoding="utf-8") as f:
+            f.write(f"\nUser: {user_input}\nBot: {response.text}\n")
 
-        try:
-            response = model.generate_content(st.session_state["messages"])
-            if not response.parts:
-                st.error("⚠️ Gemini blocked the response. Try rephrasing.")
-            else:
-                st.session_state["messages"].append({"role": "model", "parts": response.text})
-                os.makedirs("logs", exist_ok=True)
-                with open(f"logs/{st.session_state['user_id']}.txt", "a", encoding="utf-8") as f:
-                    f.write(f"\nUser: {cleaned_input}\nBot: {response.text}\n")
-            st.rerun()
-        except Exception as e:
-            st.error(f"Error: {str(e)}")
-    else:
-        st.warning("Please start your input with 'Hey VD'.")
+        st.session_state["input_submitted"] = True
+        st.rerun()
+    except Exception as e:
+        st.error(f"Error: {str(e)}")
 
-# --- PDF Upload ---
+if st.session_state["input_submitted"]:
+    st.session_state["input_submitted"] = False
+
+# PDF upload
 uploaded_file = st.file_uploader("📄 Upload a PDF", type=["pdf"])
 if uploaded_file:
     file_name = uploaded_file.name
@@ -102,32 +123,8 @@ if uploaded_file:
         st.session_state["uploaded_texts"][file_name] = extracted
         st.rerun()
 
-# --- Right-Side PDF Preview Panel ---
+# === RIGHT FLOATING PANEL FOR PREVIEWS ===
 if st.session_state["uploaded_docs"]:
-    st.markdown("""
-    <style>
-    #right-panel {
-        position: fixed;
-        top: 75px;
-        right: 0;
-        width: 320px;
-        height: 90%;
-        background-color: #f9f9f9;
-        border-left: 1px solid #ddd;
-        padding: 15px;
-        overflow-y: auto;
-        z-index: 999;
-    }
-    .pdf-preview {
-        white-space: pre-wrap;
-        font-size: 0.85rem;
-        max-height: 150px;
-        overflow-y: auto;
-        margin-bottom: 20px;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
     preview_html = "<div id='right-panel'><h4>📄 Uploaded Docs</h4>"
     for doc in st.session_state["uploaded_docs"]:
         preview_html += f"<b>📘 {doc}</b><div class='pdf-preview'>{st.session_state['uploaded_texts'][doc][:3000]}</div>"
