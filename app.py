@@ -74,7 +74,7 @@ def home():
 
     # Sidebar with logo + onboarding
     with st.sidebar:
-        st.image("vdlogo.jpg", use_column_width=True)
+        st.image("vdlogo.jpg", use_container_width='auto')
         st.subheader("🧠 VD - Legal Assistant Onboarding")
         ob = st.session_state["onboarding_data"]
 
@@ -103,7 +103,7 @@ def home():
 
     with col2:
         law_image = Image.open(random.choice(["vd1.jpg", "vd2.jpg", "VD.jpg"])).resize((550, 550))
-        st.image(law_image, use_column_width='auto')
+        st.image(law_image, use_container_width='auto')
 
     with col1:
         hlp_dtl = f"""<span style="font-size: 24px;">
