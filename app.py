@@ -57,27 +57,43 @@ st.markdown("""
 </style>
 
 <script>
+st.markdown("""
+<script>
 function startDictation() {
-    if (window.hasOwnProperty('webkitSpeechRecognition')) {
-        const recognition = new webkitSpeechRecognition();
-        recognition.continuous = false;
-        recognition.interimResults = false;
-        recognition.lang = "en-US";
-        recognition.start();
+    try {
+        if (window.hasOwnProperty('webkitSpeechRecognition')) {
+            var recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = "en-US";
+            recognition.start();
 
-        recognition.onresult = function(e) {
-            const transcript = e.results[0][0].transcript;
-            const inputBox = window.parent.document.querySelector('input[type="text"]');
-            inputBox.value = transcript;
-            inputBox.dispatchEvent(new Event('input', { bubbles: true }));
-            recognition.stop();
-        };
+            recognition.onstart = function() {
+                alert("🎙️ Voice recording started. Speak now!");
+            };
 
-        recognition.onerror = function(e) {
-            recognition.stop();
-        };
-    } else {
-        alert("Speech recognition only works in Google Chrome.");
+            recognition.onresult = function(e) {
+                var transcript = e.results[0][0].transcript.trim();
+                const inputBox = window.parent.document.querySelector('input[type="text"]');
+                if (inputBox) {
+                    inputBox.value = transcript;
+                    inputBox.dispatchEvent(new Event('input', { bubbles: true }));
+                    alert("✅ Recognized: " + transcript);
+                } else {
+                    alert("⚠️ Input box not found!");
+                }
+                recognition.stop();
+            };
+
+            recognition.onerror = function(e) {
+                alert("❌ Recognition error: " + e.error);
+                recognition.stop();
+            };
+        } else {
+            alert("⚠️ Speech recognition not supported. Please use Chrome.");
+        }
+    } catch (err) {
+        alert("💥 JavaScript Error: " + err.message);
     }
 }
 </script>
