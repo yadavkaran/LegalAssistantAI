@@ -86,7 +86,7 @@ def home():
             ob["state"] = st.text_input("🏢 Which state it is established?", value=ob["state"])
             ob["founded_date"] = st.text_input("📅 When was it founded? (MM/DD/YYYY)", value=ob["founded_date"])
 
-            if all([ob["company_name"], ob["industry"], ob["age_type"], ob["state"], ob["founded_date"]):
+            if all([ob["company_name"], ob["industry"], ob["age_type"], ob["state"], ob["founded_date"]]):
                 if st.button("✅ Submit Onboarding", key="submit_onboarding"):
                     ob["completed"] = True
                     st.success("🎉 Onboarding complete. Click 'Ask VD' to continue.")
