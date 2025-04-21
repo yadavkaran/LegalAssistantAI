@@ -48,7 +48,7 @@ if "messages" not in st.session_state:
     st.session_state["messages"] = [{
         "role": "user",
         "parts": f"""
-You are a Compliance and Legal Assistant supporting the company **{ob['company_name']}** in the **{ob['industry']}** sector.
+You are a Compliance and Legal Assistant supporting the company **{ob['company_name']}** in the **{ob['industry']}** sector established in **{ob['state']}** state.
 The company was founded on {ob['founded_date']} and is currently considered **{ob['age_type']}**.
 
 You possess deep knowledge of U.S. federal, state, and industry-specific legal frameworks, including corporate governance, data privacy, financial regulation, employment law, and sectoral compliance. 
@@ -82,9 +82,10 @@ def home():
             ob["company_name"] = st.text_input("🏢 What's your company name?", value=ob["company_name"])
             ob["industry"] = st.text_input("💼 What industry are you in?", value=ob["industry"])
             ob["age_type"] = st.selectbox("📈 Is your company new or established?", ["", "New", "Established"], index=["", "New", "Established"].index(ob["age_type"]) if ob["age_type"] else 0)
+            ob["state"] = st.text_input("🏢 Which state it is established?", value=ob["state"])
             ob["founded_date"] = st.text_input("📅 When was it founded? (MM/DD/YYYY)", value=ob["founded_date"])
 
-            if all([ob["company_name"], ob["industry"], ob["age_type"], ob["founded_date"]]):
+            if all([ob["company_name"], ob["industry"], ob["age_type"], ob["founded_date"], ob[state]):
                 if st.button("✅ Submit Onboarding", key="submit_onboarding"):
                     ob["completed"] = True
                     st.success("🎉 Onboarding complete. Click 'Ask VD' to continue.")
@@ -92,6 +93,7 @@ def home():
         else:
             st.markdown(f"**Company:** {ob['company_name']}")
             st.markdown(f"**Industry:** {ob['industry']}")
+            st.markdown(f"**State:** {ob['state']}")
             st.markdown(f"**Founded:** {ob['founded_date']}")
             st.markdown("✅ Onboarding complete.")
 
