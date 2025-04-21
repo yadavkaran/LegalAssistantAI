@@ -127,7 +127,6 @@ def home():
             st.rerun()
 
     st.markdown(horizontal_bar, True)
-    st.markdown("🔒 This AI assistant does not give legal advice.", unsafe_allow_html=True)
     st.markdown("<strong>Built by: 😎 KARAN YADAV, RUSHABH MAKWANA, ANISH AYARE</strong>", unsafe_allow_html=True)
 
 # --- Chat Page ---
