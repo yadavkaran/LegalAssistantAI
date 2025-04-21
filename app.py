@@ -113,9 +113,51 @@ for msg in st.session_state["messages"][1:]:
     st.markdown(f"**{role}:** {msg['parts']}")
 
 # --- Voice Button + Text Input ---
-st.markdown("## 🎤 Speak or Type Below")
-st.markdown('<button onclick="startDictation()" style="padding:10px; margin-bottom:10px;">🎙️ Click to Speak</button>', unsafe_allow_html=True)
+# --- Voice Button + Real-Time Text Input (Working JS method) ---
+st.markdown("""
+<script>
+function startDictation() {
+    if (!('webkitSpeechRecognition' in window)) {
+        alert("⚠️ Your browser does not support speech recognition. Please use Chrome.");
+        return;
+    }
+
+    const recognition = new webkitSpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = function() {
+        alert("🎙️ Speak now...");
+    };
+
+    recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        const inputField = window.parent.document.querySelector('input[data-testid="stTextInput"]');
+        if (inputField) {
+            inputField.value = transcript;
+            inputField.dispatchEvent(new Event("input", { bubbles: true }));
+        } else {
+            alert("❌ Could not find input box.");
+        }
+        recognition.stop();
+    };
+
+    recognition.onerror = function(event) {
+        alert("❌ Error: " + event.error);
+        recognition.stop();
+    };
+
+    recognition.start();
+}
+</script>
+
+<button onclick="startDictation()" style="padding:10px; margin-bottom:10px;">🎙️ Click to Speak</button>
+""", unsafe_allow_html=True)
+
+# --- Python text input (bound to JS field) ---
 user_input = st.text_input("Or type here")
+
 
 # --- Handle Input ---
 if user_input:
