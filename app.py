@@ -3,6 +3,8 @@ import google.generativeai as genai
 import os
 import uuid
 from PyPDF2 import PdfReader
+from PIL import Image
+import random
 
 # --- Page setup ---
 st.set_page_config(page_title="VD Legal Assistant", layout="wide")
