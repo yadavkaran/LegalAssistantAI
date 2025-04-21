@@ -129,7 +129,7 @@ for msg in st.session_state["messages"][1:]:
     st.markdown(f"**{role}:** {msg['parts']}")
 
 # --- Voice or Text Input Handler ---
-user_input = st.query_params().get("voice_input", [""])[0]
+user_input = st.st.experimental_get_query_params.get("voice_input", [""])[0]
 if not user_input:
     user_input = st.text_input("Or type your message", key=f"chat_input_{len(st.session_state['messages'])}")
 
