@@ -97,9 +97,6 @@ def home():
         st.markdown(hlp_dtl, unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
 
-        if st.button("💬 Ask VD"):
-            st.session_state.page = "chat"
-            st.rerun()
 
     st.markdown(horizontal_bar, True)
     st.markdown("🔒 This AI assistant does not give legal advice.", unsafe_allow_html=True)
