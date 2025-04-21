@@ -25,23 +25,36 @@ if st.session_state["theme"] == "dark":
         </style>
     """, unsafe_allow_html=True)
 
-
-# --- State setup ---
+# --- Session setup ---
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
 if "user_id" not in st.session_state:
     st.session_state.user_id = str(uuid.uuid4())
 
+if "onboarding_data" not in st.session_state:
+    st.session_state["onboarding_data"] = {
+        "company_name": "",
+        "industry": "",
+        "age_type": "",
+        "founded_date": "",
+        "completed": False
+    }
+
 if "messages" not in st.session_state:
+    ob = st.session_state["onboarding_data"]
     st.session_state["messages"] = [{
         "role": "user",
-       "parts": """
-You are a Compliance and Legal Assistant expert purpose-built to support legal professionals, compliance officers, and corporate entities operating in the United States. You possess deep knowledge of U.S. federal, state, and industry-specific legal frameworks, including corporate governance, data privacy, financial regulation, employment law, and sectoral compliance. 
+        "parts": f"""
+You are a Compliance and Legal Assistant supporting the company **{ob.get('company_name', 'an organization')}** in the **{ob.get('industry', 'corporate')}** sector.
+The company was founded on {ob.get('founded_date', 'an unknown date')} and is considered **{ob.get('age_type', 'unclassified')}**.
+
+You possess deep knowledge of U.S. federal, state, and industry-specific legal frameworks, including corporate governance, data privacy, financial regulation, employment law, and sectoral compliance. 
 Core Responsibilities: Interpret and summarize U.S. laws and regulatory requirements (e.g., HIPAA, CCPA, SOX, GLBA, FCPA, GDPR when applicable to U.S. entities). Provide accurate legal guidance on: Corporate law, including incorporation, mergers, acquisitions, and dissolution procedures. Regulatory filings with the SEC, IRS, and state-level authorities. Corporate governance (e.g., board responsibilities, fiduciary duties, shareholder rights). Financial compliance including Sarbanes-Oxley (SOX), anti-money laundering (AML), and Dodd-Frank requirements. Data privacy and protection laws (e.g., CCPA, GDPR, HIPAA, PCI DSS). Employment law matters such as FLSA, EEOC guidelines, and workplace compliance audits. Drafting and reviewing documents such as NDAs, Terms of Service, bylaws, shareholder agreements, audit checklists, and vendor contracts. Compliance tracking, risk assessments, audit preparedness, and due diligence support.
 Advise on best practices for maintaining good standing across state jurisdictions and avoiding regulatory penalties. 
 Behavioral Rules: Tone: Formal, precise, legal-sounding language appropriate for compliance professionals and legal departments. Jurisdiction: Default to U.S. federal and state laws unless otherwise specified. Length: Keep each response under 5000 characters. Authority: Do not include disclaimers such as "not legal advice" or "informational purposes only." Citations: Include links or citations from official sources where applicable: U.S. Code: https://uscode.house.gov FTC: https://www.ftc.gov SEC: https://www.sec.gov CCPA: https://oag.ca.gov/privacy/ccpa HIPAA: https://www.hhs.gov/hipaa IRS: https://www.irs.gov/businesses Clarify: If a query lacks context (e.g., missing jurisdiction, industry, or document type), ask for clarification—concisely and legally. Brevity & Precision: Avoid conversational tone, repetition, or filler. Responses must sound like a senior legal assistant or paralegal.
-"""
+
+        """
     }]
 
 if "uploaded_docs" not in st.session_state:
@@ -59,28 +72,33 @@ def home():
     horizontal_bar = "<hr style='margin-top: 0; margin-bottom: 0; height: 1px; border: 1px solid #635985;'><br>"
 
     with st.sidebar:
-        st.subheader("🧠 VD - Legal Assistant")
-        st.markdown(horizontal_bar, True)
-        sidebar_logo = Image.open("vdlogo.jpg").resize((300, 390))
-        st.image(sidebar_logo, use_container_width='auto')
+        st.subheader("🧠 VD - Legal Assistant Onboarding")
 
-        st.markdown("""
-        **What can VD do?**
-        - 🧾 Summarize regulations (SOX, HIPAA, CCPA)
-        - 📝 Draft NDAs, policies, checklists
-        - 📁 Analyze uploaded PDFs
+        if not st.session_state["onboarding_data"]["completed"]:
+            st.session_state["onboarding_data"]["company_name"] = st.text_input("🏢 What's your company name?", value=st.session_state["onboarding_data"]["company_name"])
+            st.session_state["onboarding_data"]["industry"] = st.text_input("💼 What industry are you in?", value=st.session_state["onboarding_data"]["industry"])
+            st.session_state["onboarding_data"]["age_type"] = st.selectbox("📈 Is the company new or established?", ["", "New", "Established"], index=["", "New", "Established"].index(st.session_state["onboarding_data"]["age_type"] or ""))
+            st.session_state["onboarding_data"]["founded_date"] = st.text_input("📅 When was it founded? (MM/DD/YYYY)", value=st.session_state["onboarding_data"]["founded_date"])
 
-        _Disclaimer: AI-generated responses are informational only._
-        """, unsafe_allow_html=True)
+            if all(st.session_state["onboarding_data"].values()):
+                if st.button("✅ Submit"):
+                    st.session_state["onboarding_data"]["completed"] = True
+                    st.success("🎉 Onboarding complete. You may now Ask VD!")
+                    st.rerun()
+        else:
+            ob = st.session_state["onboarding_data"]
+            st.markdown(f"**Company:** {ob['company_name']}")
+            st.markdown(f"**Industry:** {ob['industry']}")
+            st.markdown(f"**Founded:** {ob['founded_date']}")
+            st.markdown("✅ Onboarding Complete")
 
-    # Help Content with PixMatch-style layout
+    # Help + Info Layout
     hlp_dtl = f"""<span style="font-size: 24px;">
     <ol>
-    <li style="font-size:15px;">VD helps you interpret U.S. corporate, privacy, and compliance laws.</li>
-    <li style="font-size:15px;">You can upload a PDF (e.g., contract, NDA, policy) and VD will summarize or extract key content.</li>
-    <li style="font-size:15px;">Ask questions like: “What does SOX require for financial reporting?”</li>
-    <li style="font-size:15px;">All queries and uploads are session-based and not stored permanently.</li>
-    <li style="font-size:15px;">This tool is for informational use and does not replace legal counsel.</li>
+    <li style="font-size:15px;">VD helps interpret U.S. laws: SOX, HIPAA, CCPA, and more.</li>
+    <li style="font-size:15px;">Upload policies or contracts for instant summaries.</li>
+    <li style="font-size:15px;">Draft NDAs, T&Cs, Privacy Policies using AI support.</li>
+    <li style="font-size:15px;">Works best with clear company and document context.</li>
     </ol></span>"""
 
     st.title("📚 Welcome to VD - Compliance & Legal Assistant")
@@ -98,18 +116,19 @@ def home():
         st.markdown(hlp_dtl, unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
 
+        if st.session_state["onboarding_data"]["completed"]:
+            if st.button("💬 Ask VD", key="start_chat_btn"):
+                st.session_state.page = "chat"
+                st.rerun()
 
     st.markdown(horizontal_bar, True)
-    st.markdown("🔒 This AI assistant does not give legal advice.", unsafe_allow_html=True)
+    st.markdown("🔒 This assistant does not give legal advice.", unsafe_allow_html=True)
     st.markdown("<strong>Built by: 😎 KARAN YADAV, RUSHABH MAKWANA, ANISH AYARE</strong>", unsafe_allow_html=True)
-
-    if st.button("💬 Ask VD"):
-        st.session_state.page = "chat"
-        st.rerun()
 
 # --- Page 2: Chatbot View ---
 def show_chat():
     st.title("📚 VD - Legal Chat Assistant")
+    st.markdown(f"### 🏢 Company: **{st.session_state['onboarding_data'].get('company_name', '')}**")
 
     if st.button("🔙 Back to Home"):
         st.session_state.page = "home"
@@ -126,7 +145,6 @@ def show_chat():
         role = "🧑" if msg["role"] == "user" else "🤖"
         st.markdown(f"**{role}:** {msg['parts']}")
 
-    # Input field
     user_input = st.text_input("💬 How can I assist you today?", key=f"chat_input_{len(st.session_state['messages'])}")
     if user_input:
         st.session_state["messages"].append({"role": "user", "parts": user_input})
@@ -190,7 +208,7 @@ def show_chat():
         preview_html += "</div>"
         st.markdown(preview_html, unsafe_allow_html=True)
 
-# --- Run the page ---
+# --- Run the correct page ---
 if st.session_state.page == "home":
     home()
 else:
