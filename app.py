@@ -111,7 +111,7 @@ def home():
         <li style="font-size:15px;">📝 Onboard your company to personalize responses</li>
        <li style="font-size:15px;">Upload contracts, NDAs, or policies in PDF format to get instant summaries or clause extraction.</li>
        <li style="font-size:15px;">Type compliance-related questions (e.g., “What’s required under SOX §404?”) to get concise answers.</li>
-       <li style="font-size:15px;">Responses are legally styled, limited to 200 characters, and include citations where applicable.</li>
+       <li style="font-size:15px;">Responses are legally styled, and include citations where applicable.</li>
        <li style="font-size:15px;">All processing is session-based. Your files and queries are not saved or reused.</li>
        <li style="font-size:15px;">VD defaults to U.S. legal context unless a specific jurisdiction is mentioned.</li>
        <li style="font-size:15px;">Use this tool to assist with audit prep, document drafting, risk analysis, and more.</li>
