@@ -32,7 +32,7 @@ if "uploaded_docs" not in st.session_state:
 if "uploaded_texts" not in st.session_state:
     st.session_state["uploaded_texts"] = {}
 
-# --- Custom CSS & JS ---
+# --- Custom CSS for PDF Preview ---
 st.markdown("""
 <style>
 #right-panel {
@@ -55,7 +55,9 @@ st.markdown("""
     margin-bottom: 20px;
 }
 </style>
-#---Voice----
+""", unsafe_allow_html=True)
+
+# --- JavaScript for Voice Input ---
 st.markdown("""
 <script>
 function startDictation() {
@@ -110,12 +112,12 @@ for msg in st.session_state["messages"][1:]:
     role = "🧑" if msg["role"] == "user" else "🤖"
     st.markdown(f"**{role}:** {msg['parts']}")
 
-# --- Voice Button + Text Input
-st.markdown("## 🎙️ Speak or Type Below")
+# --- Voice Button + Text Input ---
+st.markdown("## 🎤 Speak or Type Below")
 st.markdown('<button onclick="startDictation()" style="padding:10px; margin-bottom:10px;">🎙️ Click to Speak</button>', unsafe_allow_html=True)
 user_input = st.text_input("Or type here")
 
-# --- Handle Input
+# --- Handle Input ---
 if user_input:
     st.session_state["messages"].append({"role": "user", "parts": user_input})
 
@@ -132,7 +134,7 @@ if user_input:
     except Exception as e:
         st.error(f"Error: {str(e)}")
 
-# --- PDF Upload
+# --- PDF Upload ---
 uploaded_file = st.file_uploader("📄 Upload a PDF", type=["pdf"])
 if uploaded_file:
     file_name = uploaded_file.name
