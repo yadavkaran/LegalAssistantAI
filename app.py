@@ -55,7 +55,7 @@ st.markdown("""
     margin-bottom: 20px;
 }
 </style>
-
+#---Voice----
 st.markdown("""
 <script>
 function startDictation() {
