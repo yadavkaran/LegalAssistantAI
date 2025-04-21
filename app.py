@@ -61,7 +61,7 @@ def home():
     with st.sidebar:
         st.subheader("🧠 VD - Legal Assistant")
         st.markdown(horizontal_bar, True)
-        sidebar_logo = Image.open("VD.jpg").resize((300, 390))
+        sidebar_logo = Image.open("vdlogo.jpg").resize((300, 390))
         st.image(sidebar_logo, use_container_width='auto')
 
         st.markdown("""
@@ -89,7 +89,7 @@ def home():
     col1, col2 = st.columns(2)
 
     with col2:
-        law_image = Image.open(random.choice(["vd1.jpg", "vd2.jpg", "vd3.jpg"])).resize((550, 550))
+        law_image = Image.open(random.choice(["vd1.jpg", "vd2.jpg", "VD.jpg"])).resize((550, 550))
         st.image(law_image, use_container_width='auto')
 
     with col1:
