@@ -192,6 +192,6 @@ def show_chat():
 
 # --- Run the page ---
 if st.session_state.page == "home":
-    show_home()
+    home()
 else:
     show_chat()
