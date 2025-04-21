@@ -16,41 +16,33 @@ if "theme" not in st.session_state:
 toggle = st.toggle("🌙 Dark Mode" if st.session_state["theme"] == "light" else "☀️ Light Mode", value=(st.session_state["theme"] == "dark"))
 st.session_state["theme"] = "dark" if toggle else "light"
 
-st.markdown("""
+if st.session_state["theme"] == "dark":
+    st.markdown("""
         <style>
-        html, body, .stApp {
-            background-color: #121212 !important;
-            color: #e0e0e0 !important;
-        }
-        .stMarkdown, .stText, .st-bw, .css-1d391kg, .css-10trblm, .css-1v3fvcr, .css-1cpxqw2 {
-            color: #e0e0e0 !important;
-        }
-        .stButton > button {
-            background-color: #2d2d2d !important;
-            color: #e0e0e0 !important;
-            border: 1px solid #444 !important;
-        }
-        .stTextInput input, .stTextArea textarea {
-            background-color: #1e1e1e !important;
-            color: #e0e0e0 !important;
-            border: 1px solid #333 !important;
-        }
-        .stSelectbox div[data-baseweb="select"] {
-            background-color: #1e1e1e !important;
-            color: #e0e0e0 !important;
-        }
-        #right-panel {
-            background-color: #1e1e1e !important;
-            color: #e0e0e0 !important;
-            border-left: 1px solid #444 !important;
-        }
-        .pdf-preview {
-            background-color: #1e1e1e !important;
-            color: #e0e0e0 !important;
-        }
-        hr {
-            border-top: 1px solid #555 !important;
-        }
+            body, .stApp {
+                background-color: #121212 !important;
+                color: #e0e0e0 !important;
+            }
+            .stMarkdown, .stText, .st-bw, .css-1d391kg, .css-10trblm, .css-1v3fvcr, .css-1cpxqw2 {
+                color: #e0e0e0 !important;
+            }
+            .stButton > button {
+                background-color: #333 !important;
+                color: #e0e0e0 !important;
+                border: 1px solid #555 !important;
+            }
+            .stTextInput > div > input {
+                background-color: #1e1e1e !important;
+                color: #e0e0e0 !important;
+            }
+            .stTextArea > div > textarea {
+                background-color: #1e1e1e !important;
+                color: #e0e0e0 !important;
+            }
+            .stSelectbox > div > div {
+                background-color: #1e1e1e !important;
+                color: #e0e0e0 !important;
+            }
         </style>
     """, unsafe_allow_html=True)
 
