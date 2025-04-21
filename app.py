@@ -4,6 +4,9 @@ import os
 import uuid
 from PyPDF2 import PdfReader
 
+# --- Page setup ---
+st.set_page_config(page_title="VD Legal Assistant", layout="wide")
+
 # --- Theme Toggle ---
 if "theme" not in st.session_state:
     st.session_state["theme"] = "light"
@@ -20,8 +23,6 @@ if st.session_state["theme"] == "dark":
         </style>
     """, unsafe_allow_html=True)
 
-# --- Page setup ---
-st.set_page_config(page_title="VD Legal Assistant", layout="wide")
 
 # --- State setup ---
 if "page" not in st.session_state:
