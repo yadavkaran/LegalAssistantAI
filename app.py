@@ -49,7 +49,7 @@ def home():
         if not ob["completed"]:
             ob["company_name"] = st.text_input("🏢 What's your company name?", value=ob["company_name"])
             ob["industry"] = st.text_input("💼 What industry are you in?", value=ob["industry"])
-            ob["age_type"] = st.selectbox("📈 Is your company new or established?", ["", "New", "Established"], index=["", "New", "Established"].index(ob["age_type"]) if ob["age_type"] else 0)
+            ob["age_type"] = st.selectbox("📈 Is your company a Startup or established?", ["", "Startup", "Established"], index=["", "Startup", "Established"].index(ob["age_type"]) if ob["age_type"] else 0)
             ob["state"] = st.text_input("🏢 Which state it is established?", value=ob["state"])
             ob["founded_date"] = st.text_input("📅 When was it founded? (MM/DD/YYYY)", value=ob["founded_date"])
 
