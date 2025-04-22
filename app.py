@@ -100,38 +100,66 @@ model = genai.GenerativeModel("gemini-2.0-flash")
 
 # --- Home Page ---
 def home():
-    st.sidebar.image("vdlogo.jpg", use_container_width=True)
-    st.sidebar.subheader("🧠 VD - Legal Assistant Onboarding")
-    ob = st.session_state["onboarding_data"]
+    horizontal_bar = "<hr style='margin-top: 0; margin-bottom: 0; height: 1px; border: 1px solid #635985;'><br>"
 
-    if not ob["completed"]:
-        ob["company_name"] = st.sidebar.text_input("🏢 What's your company name?", value=ob["company_name"])
-        ob["industry"] = st.sidebar.text_input("💼 Industry?", value=ob["industry"])
-        ob["age_type"] = st.sidebar.selectbox("📈 Company status", ["", "New", "Established"], index=["", "New", "Established"].index(ob["age_type"]) if ob["age_type"] else 0)
-        ob["state"] = st.sidebar.text_input("📍 U.S. State?", value=ob["state"])
-        ob["founded_date"] = st.sidebar.text_input("📅 Founded (MM/DD/YYYY)?", value=ob["founded_date"])
-        if all([ob[k] for k in ob if k != "completed"]):
-            if st.sidebar.button("✅ Submit Onboarding"):
-                ob["completed"] = True
-                st.rerun()
-    else:
-        st.sidebar.markdown(f"**Company:** {ob['company_name']}")
-        st.sidebar.markdown(f"**Industry:** {ob['industry']}")
-        st.sidebar.markdown("✅ Onboarding Complete")
+    # Sidebar with logo + onboarding
+    with st.sidebar:
+        st.image("vdlogo.jpg", use_container_width='auto')
+        st.subheader("🧠 VD - Legal Assistant Onboarding")
+        ob = st.session_state["onboarding_data"]
 
+        if not ob["completed"]:
+            ob["company_name"] = st.text_input("🏢 What's your company name?", value=ob["company_name"])
+            ob["industry"] = st.text_input("💼 What industry are you in?", value=ob["industry"])
+            ob["age_type"] = st.selectbox("📈 Is your company new or established?", ["", "New", "Established"], index=["", "New", "Established"].index(ob["age_type"]) if ob["age_type"] else 0)
+            ob["state"] = st.text_input("🏢 Which state it is established?", value=ob["state"])
+            ob["founded_date"] = st.text_input("📅 When was it founded? (MM/DD/YYYY)", value=ob["founded_date"])
+
+            if all([ob["company_name"], ob["industry"], ob["age_type"], ob["state"], ob["founded_date"]]):
+                if st.button("✅ Submit Onboarding", key="submit_onboarding"):
+                    ob["completed"] = True
+                    st.success("🎉 Onboarding complete. Click 'Ask VD' to continue.")
+                    st.rerun()
+        else:
+            st.markdown(f"**Company:** {ob['company_name']}")
+            st.markdown(f"**Industry:** {ob['industry']}")
+            st.markdown(f"**State:** {ob['state']}")
+            st.markdown(f"**Founded:** {ob['founded_date']}")
+            st.markdown("✅ Onboarding complete.")
+
+    # Main layout
     st.title("📚 Welcome to VD - Compliance & Legal Assistant")
-    st.markdown("---")
-    st.subheader("📌 What VD Can Do")
-    st.markdown("""
-    - 📝 Onboard your company to personalize responses
-    - 📄 Upload PDFs (contracts, policies, NDAs)
-    - 💬 Ask compliance-related legal questions
-    - 🧾 Get clause summaries and legal references
-    """)
-    if st.button("💬 Ask VD"):
-        st.session_state.page = "chat"
-        st.rerun()
+    st.markdown(horizontal_bar, True)
 
+    col1, col2 = st.columns(2)
+
+    with col2:
+        law_image = Image.open(random.choice(["vd1.jpg", "vd2.jpg", "VD.jpg"])).resize((550, 550))
+        st.image(law_image, use_container_width='auto')
+
+    with col1:
+        hlp_dtl = f"""<span style="font-size: 24px;">
+        <ol>
+        <li style="font-size:15px;">📝 Onboard your company to personalize responses</li>
+       <li style="font-size:15px;">Upload contracts, NDAs, or policies in PDF format to get instant summaries or clause extraction.</li>
+       <li style="font-size:15px;">Type compliance-related questions (e.g., “What’s required under SOX §404?”) to get concise answers.</li>
+       <li style="font-size:15px;">Responses are legally styled, and include citations where applicable.</li>
+       <li style="font-size:15px;">All processing is session-based. Your files and queries are not saved or reused.</li>
+       <li style="font-size:15px;">VD defaults to U.S. legal context unless a specific jurisdiction is mentioned.</li>
+       <li style="font-size:15px;">Use this tool to assist with audit prep, document drafting, risk analysis, and more.</li>
+        </ol></span>"""
+
+        st.subheader("📌 What VD Can Do")
+        st.markdown(horizontal_bar, True)
+        st.markdown(hlp_dtl, unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        if st.button("💬 Ask VD", key="ask_vd_always"):
+            st.session_state.page = "chat"
+            st.rerun()
+
+    st.markdown(horizontal_bar, True)
+    st.markdown("<strong>Built by: 😎 KARAN YADAV, RUSHABH MAKWANA, ANISH AYARE</strong>", unsafe_allow_html=True)
 # --- Chat Page ---
 def show_chat():
     st.title("📚 VD - Legal Chat Assistant")
