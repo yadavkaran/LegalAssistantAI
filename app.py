@@ -56,20 +56,19 @@ if st.session_state["theme"] == "dark":
         }
         </style>
     """, unsafe_allow_html=True)
-#Centered Ask VD button
+# Add this at the top of your script or page to define the CSS
 st.markdown("""
     <style>
-    .centered-button {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-    }
-    .big-button button {
-        font-size: 20px !important;
-        padding: 0.75em 2em !important;
-        border-radius: 12px;
-    }
+        .centered-button {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .big-button button {
+            font-size: 18px;
+            padding: 0.75em 2em;
+        }
     </style>
 """, unsafe_allow_html=True)
 
