@@ -56,13 +56,14 @@ if st.session_state["theme"] == "dark":
         }
         </style>
     """, unsafe_allow_html=True)
-# --- Centered & Bigger Button Styling ---
+# --- Vertically Centered & Bigger Button Styling ---
 st.markdown("""
     <style>
     .centered-button {
         display: flex;
         justify-content: center;
-        margin-top: 25px;
+        align-items: center;
+        height: 100vh;
     }
     .big-button button {
         font-size: 20px !important;
