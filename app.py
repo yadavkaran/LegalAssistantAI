@@ -56,6 +56,21 @@ if st.session_state["theme"] == "dark":
         }
         </style>
     """, unsafe_allow_html=True)
+# --- Centered & Bigger Button Styling ---
+st.markdown("""
+    <style>
+    .centered-button {
+        display: flex;
+        justify-content: center;
+        margin-top: 25px;
+    }
+    .big-button button {
+        font-size: 20px !important;
+        padding: 0.75em 2em !important;
+        border-radius: 12px;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 # --- Session State ---
 if "page" not in st.session_state:
@@ -132,29 +147,12 @@ def home():
         st.markdown(horizontal_bar, True)
         st.markdown(hlp_dtl, unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
-        # Custom styling to center the button
-        st.markdown(
-            """
-            <style>
-            .centered-button {
-                display: flex;
-                justify-content: center;
-                margin-top: 20px;
-            }
-            .big-button button {
-                font-size: 20px !important;
-                padding: 0.75em 2em !important;
-            }
-            </style>
-            """,
-            unsafe_allow_html=True
-        )
         
-        # Container for the centered button
         st.markdown('<div class="centered-button big-button">', unsafe_allow_html=True)
         if st.button("💬 Ask VD", key="ask_vd_always"):
             st.session_state.page = "chat"
             st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown(horizontal_bar, True)
     st.markdown("<strong>Built by: 😎 KARAN YADAV, RUSHABH MAKWANA, ANISH AYARE</strong>", unsafe_allow_html=True)
