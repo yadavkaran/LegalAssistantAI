@@ -61,9 +61,9 @@ st.markdown("""
     <style>
     .centered-button {
         display: flex;
-        justify-content: center; /* Center horizontally */
-        align-items: center;     /* Center vertically */
-        width: 100%;             /* Ensure full width for centering */
+        justify-content: center;
+        align-items: center;
+        width: 100%;
     }
     .big-button button {
         font-size: 20px !important;
