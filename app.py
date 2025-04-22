@@ -275,25 +275,18 @@ def show_chat():
                 mime="text/plain"
             )
 
-        elif export_format == "PDF (.pdf)":
+      elif export_format == "PDF (.pdf)":
             pdf = FPDF()
             pdf.add_page()
             pdf.set_auto_page_break(auto=True, margin=15)
             pdf.set_font("Arial", size=12)
-
             for line in chat_text.split("\n"):
                 pdf.multi_cell(0, 10, line)
-
-            pdf_bytes = pdf.output(dest="S").encode("latin1")
-            pdf_buffer = io.BytesIO(pdf_bytes)
-
-            st.download_button(
-                "📥 Download Chat as PDF",
-                data=pdf_buffer,
-                file_name="vd_chat_history.pdf",
-                mime="application/pdf"
-            )
-
+            pdf_buffer = io.BytesIO()
+            pdf.output(pdf_buffer)
+            pdf_buffer.seek(0)
+            st.download_button("📥 Download Chat as PDF", data=pdf_buffer, file_name="vd_chat_history.pdf", mime="application/pdf")
+          
 
 # --- Run App ---
 if st.session_state.page == "home":
