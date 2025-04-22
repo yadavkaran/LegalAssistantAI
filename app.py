@@ -213,35 +213,36 @@ def show_chat():
             st.session_state["uploaded_texts"][file_name] = extracted
             st.rerun()
 
-  panel_bg = "#f9f9f9" if st.session_state["theme"] == "light" else "#1e1e1e"
-panel_text = "#000000" if st.session_state["theme"] == "light" else "#e0e0e0"
-panel_border = "#ddd" if st.session_state["theme"] == "light" else "#555"
+    panel_bg = "#f9f9f9" if st.session_state["theme"] == "light" else "#1e1e1e"
+    panel_text = "#000000" if st.session_state["theme"] == "light" else "#e0e0e0"
+    panel_border = "#ddd" if st.session_state["theme"] == "light" else "#555"
 
-st.markdown(f"""
-<style>
-    #right-panel {{
-        position: fixed;
-        top: 75px;
-        right: 0;
-        width: 320px;
-        height: 90%;
-        background-color: {panel_bg};
-        color: {panel_text};
-        border-left: 1px solid {panel_border};
-        padding: 15px;
-        overflow-y: auto;
-        z-index: 999;
-    }}
-    .pdf-preview {{
-        white-space: pre-wrap;
-        font-size: 0.85rem;
-        max-height: 150px;
-        overflow-y: auto;
-        margin-bottom: 20px;
-        color: {panel_text};
-    }}
-</style>
-""", unsafe_allow_html=True)
+    st.markdown(f"""
+        <style>
+            #right-panel {{
+                position: fixed;
+                top: 75px;
+                right: 0;
+                width: 320px;
+                height: 90%;
+                background-color: {panel_bg};
+                color: {panel_text};
+                border-left: 1px solid {panel_border};
+                padding: 15px;
+                overflow-y: auto;
+                z-index: 999;
+            }}
+            .pdf-preview {{
+                white-space: pre-wrap;
+                font-size: 0.85rem;
+                max-height: 150px;
+                overflow-y: auto;
+                margin-bottom: 20px;
+                color: {panel_text};
+            }}
+        </style>
+    """, unsafe_allow_html=True)
+
 
         preview_html = "<div id='right-panel'><h4>📄 Uploaded Docs</h4>"
         for doc in st.session_state["uploaded_docs"]:
