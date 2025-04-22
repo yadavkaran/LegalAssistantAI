@@ -175,95 +175,62 @@ def format_chat_history():
     )
 
 def show_chat():
-    ob = st.session_state["onboarding_data"]
     st.title("📚 VD - Legal Chat Assistant")
-
+    ob = st.session_state["onboarding_data"]
     if ob["company_name"]:
         st.markdown(f"### 🏢 {ob['company_name']} ({ob['industry']})")
 
-    # Navigation buttons
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        if st.button("🔙 Back to Home", key="go_home"):
-            st.session_state.page = "home"
-            st.rerun()
-    with col2:
-        if st.button("🗑️ Reset Chat", key="reset_chat"):
-            st.session_state["messages"] = [st.session_state["messages"][0]]
-            st.session_state["uploaded_docs"] = []
-            st.session_state["uploaded_texts"] = {}
-            st.rerun()
+    with st.expander("🧠 Chat Memory Options", expanded=False):
+        memory_mode = st.radio("Select chat behavior:", ["🔁 Continue Previous Chat", "🆕 Start Fresh"], horizontal=True)
+        if memory_mode == "🆕 Start Fresh":
+            if st.button("♻️ Reset to Fresh Start"):
+                st.session_state["messages"] = [st.session_state["messages"][0]]
+                st.rerun()
 
-    # Display past messages
+    if st.button("🔙 Back to Home"):
+        st.session_state.page = "home"
+        st.rerun()
+
     for msg in st.session_state["messages"][1:]:
         role = "🧑" if msg["role"] == "user" else "🤖"
         st.markdown(f"**{role}:** {msg['parts']}")
 
-    # Chat input
     user_input = st.text_input("💬 How can I assist you today?", key=f"chat_input_{len(st.session_state['messages'])}")
     if user_input:
         st.session_state["messages"].append({"role": "user", "parts": user_input})
         try:
             response = model.generate_content(st.session_state["messages"])
             st.session_state["messages"].append({"role": "model", "parts": response.text})
-
-            os.makedirs("logs", exist_ok=True)
-            with open(f"logs/{st.session_state['user_id']}.txt", "a", encoding="utf-8") as f:
-                f.write(f"\nUser: {user_input}\nBot: {response.text}\n")
-
-            st.rerun()
         except Exception as e:
             st.error(f"Error: {str(e)}")
+        st.rerun()
 
-    # PDF upload
     uploaded_file = st.file_uploader("📄 Upload a PDF", type=["pdf"])
     if uploaded_file:
         file_name = uploaded_file.name
         if file_name not in st.session_state["uploaded_docs"]:
             reader = PdfReader(uploaded_file)
             extracted = "\n\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
-            st.session_state["messages"].append({
-                "role": "user",
-                "parts": f"Extracted from uploaded PDF '{file_name}':\n{extracted}"
-            })
+            st.session_state["messages"].append({"role": "user", "parts": f"Extracted from uploaded PDF '{file_name}':\n{extracted}"})
             st.session_state["uploaded_docs"].append(file_name)
             st.session_state["uploaded_texts"][file_name] = extracted
             st.rerun()
 
-    # PDF Preview Sidebar
     if st.session_state["uploaded_docs"]:
-        st.markdown("""
-        <style>
-            #right-panel {
-                position: fixed;
-                top: 75px;
-                right: 0;
-                width: 320px;
-                height: 90%;
-                background-color: #f9f9f9;
-                border-left: 1px solid #ddd;
-                padding: 15px;
-                overflow-y: auto;
-                z-index: 999;
-            }
-            .pdf-preview {
-                white-space: pre-wrap;
-                font-size: 0.85rem;
-                max-height: 150px;
-                overflow-y: auto;
-                margin-bottom: 20px;
-            }
-        </style>
-        """, unsafe_allow_html=True)
-
         preview_html = "<div id='right-panel'><h4>📄 Uploaded Docs</h4>"
         for doc in st.session_state["uploaded_docs"]:
             preview_html += f"<b>📘 {doc}</b><div class='pdf-preview'>{st.session_state['uploaded_texts'][doc][:3000]}</div>"
         preview_html += "</div>"
         st.markdown(preview_html, unsafe_allow_html=True)
 
- # Export Chat
-      with st.expander("📤 Export Chat", expanded=False):
+    def format_chat_history():
+        lines = []
+        for msg in st.session_state["messages"][1:]:
+            prefix = "🧑" if msg["role"] == "user" else "🤖"
+            lines.append(f"{prefix}: {msg['parts']}")
+        return "\n\n".join(lines)
+
+    with st.expander("📤 Export Chat", expanded=False):
         export_format = st.selectbox("Choose format:", ["Text (.txt)", "PDF (.pdf)"])
         chat_text = format_chat_history()
 
@@ -281,7 +248,6 @@ def show_chat():
             pdf.output(pdf_buffer)
             pdf_buffer.seek(0)
             st.download_button("📥 Download Chat as PDF", data=pdf_buffer, file_name="vd_chat_history.pdf", mime="application/pdf")
-          
 
 # --- Run App ---
 if st.session_state.page == "home":
