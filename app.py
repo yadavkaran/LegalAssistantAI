@@ -8,6 +8,7 @@ from PIL import Image
 import random
 import io
 from fpdf import FPDF
+import re
 
 # --- Page setup ---
 st.set_page_config(page_title="VD Legal Assistant", layout="centered")
@@ -220,37 +221,42 @@ def show_chat():
         preview_html += "</div>"
         st.markdown(preview_html, unsafe_allow_html=True)
 
-    # Export Chat
-    with st.expander("📤 Export Chat", expanded=False):
-        export_format = st.selectbox("Choose format:", ["Text (.txt)", "PDF (.pdf)"])
-        chat_text = format_chat_history()
+    def remove_non_latin1(text):
+    """Removes characters not supported by latin1 encoding (used by fpdf)."""
+    return re.sub(r'[^\x00-\xFF]', '', text)
+    
+   # Export Chat
+with st.expander("📤 Export Chat", expanded=False):
+    export_format = st.selectbox("Choose format:", ["Text (.txt)", "PDF (.pdf)"])
+    chat_text = format_chat_history()
 
-        if export_format == "Text (.txt)":
-            st.download_button(
-                "📥 Download Chat as TXT",
-                data=chat_text,
-                file_name="vd_chat_history.txt",
-                mime="text/plain"
-            )
+    if export_format == "Text (.txt)":
+        st.download_button(
+            "📥 Download Chat as TXT",
+            data=chat_text,
+            file_name="vd_chat_history.txt",
+            mime="text/plain"
+        )
 
-        elif export_format == "PDF (.pdf)":
-            pdf = FPDF()
-            pdf.add_page()
-            pdf.set_auto_page_break(auto=True, margin=15)
-            pdf.set_font("Arial", size=12)
+    elif export_format == "PDF (.pdf)":
+        safe_chat_text = remove_non_latin1(chat_text)  # sanitize unsupported characters
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_auto_page_break(auto=True, margin=15)
+        pdf.set_font("Arial", size=12)
 
-            for line in chat_text.split("\n"):
-                pdf.multi_cell(0, 10, line)
+        for line in safe_chat_text.split("\n"):
+            pdf.multi_cell(0, 10, line)
 
-            pdf_bytes = pdf.output(dest="S").encode("latin1")
-            pdf_buffer = io.BytesIO(pdf_bytes)
+        pdf_stream = pdf.output(dest="S").encode("latin1")
+        pdf_buffer = io.BytesIO(pdf_stream)
 
-            st.download_button(
-                "📥 Download Chat as PDF",
-                data=pdf_buffer,
-                file_name="vd_chat_history.pdf",
-                mime="application/pdf"
-            )
+        st.download_button(
+            "📥 Download Chat as PDF",
+            data=pdf_buffer,
+            file_name="vd_chat_history.pdf",
+            mime="application/pdf"
+        )
 
 
 # --- Run App ---
