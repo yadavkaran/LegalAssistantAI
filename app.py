@@ -280,38 +280,24 @@ def show_chat():
         st.markdown(preview_html, unsafe_allow_html=True)
 
     # Export Chat
-    with st.expander("📤 Export Chat", expanded=False):
+      with st.expander("📤 Export Chat", expanded=False):
         export_format = st.selectbox("Choose format:", ["Text (.txt)", "PDF (.pdf)"])
         chat_text = format_chat_history()
 
         if export_format == "Text (.txt)":
-            st.download_button(
-                "📥 Download Chat as TXT",
-                data=chat_text,
-                file_name="vd_chat_history.txt",
-                mime="text/plain"
-            )
+            st.download_button("📥 Download Chat as TXT", data=chat_text, file_name="vd_chat_history.txt", mime="text/plain")
 
         elif export_format == "PDF (.pdf)":
             pdf = FPDF()
             pdf.add_page()
             pdf.set_auto_page_break(auto=True, margin=15)
             pdf.set_font("Arial", size=12)
-
             for line in chat_text.split("\n"):
                 pdf.multi_cell(0, 10, line)
-
-            pdf_bytes = pdf.output(dest="S").encode("latin1")
-            pdf_buffer = io.BytesIO(pdf_bytes)
-
-            st.download_button(
-                "📥 Download Chat as PDF",
-                data=pdf_buffer,
-                file_name="vd_chat_history.pdf",
-                mime="application/pdf"
-            )
-
-
+            pdf_buffer = io.BytesIO()
+            pdf.output(pdf_buffer)
+            pdf_buffer.seek(0)
+            st.download_button("📥 Download Chat as PDF", data=pdf_buffer, file_name="vd_chat_history.pdf", mime="application/pdf")
 # --- Run App ---
 if st.session_state.page == "home":
     home()
