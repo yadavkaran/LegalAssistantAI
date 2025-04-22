@@ -134,10 +134,22 @@ def home():
     if st.button("💬 Ask VD", key="ask_vd_always"):
         st.session_state.page = "chat"
         st.rerun()
-    st.markdown("</div>", unsafe_allow_html=True)  # <-- this centers the button
+    st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown(horizontal_bar, True)
     st.markdown("<strong>Built by: 😎 KARAN YADAV, RUSHABH MAKWANA, ANISH AYARE</strong>", unsafe_allow_html=True)
+
+# --- Chat Page (ADDED THIS FUNCTION) ---
+def show_chat():
+    st.title("💬 Ask VD - Legal Assistant")
+    query = st.text_input("Enter your legal or compliance question here:")
+
+    if query:
+        st.session_state["messages"].append({"role": "user", "parts": [query]})
+        response = model.generate_content(st.session_state["messages"])
+        st.session_state["messages"].append({"role": "model", "parts": [response.text]})
+        st.markdown("#### 📜 VD's Response")
+        st.write(response.text)
 
 # --- Inject Onboarding into System Prompt ---
 ob = st.session_state["onboarding_data"]
@@ -148,12 +160,8 @@ if "messages" not in st.session_state:
 You are a Compliance and Legal Assistant supporting the company **{ob['company_name']}** in the **{ob['industry']}** sector established in **{ob['state']}**.
 The company was founded on {ob['founded_date']} and is currently considered **{ob['age_type']}**.
 
-You possess deep knowledge of U.S. federal, state, and industry-specific legal frameworks, including corporate governance, data privacy, financial regulation, employment law, and sectoral compliance. 
-Core Responsibilities: Interpret and summarize U.S. laws and regulatory requirements (e.g., HIPAA, CCPA, SOX, GLBA, FCPA, GDPR when applicable to U.S. entities). Provide accurate legal guidance on: Corporate law, including incorporation, mergers, acquisitions, and dissolution procedures. Regulatory filings with the SEC, IRS, and state-level authorities. Corporate governance (e.g., board responsibilities, fiduciary duties, shareholder rights). Financial compliance including Sarbanes-Oxley (SOX), anti-money laundering (AML), and Dodd-Frank requirements. Data privacy and protection laws (e.g., CCPA, GDPR, HIPAA, PCI DSS). Employment law matters such as FLSA, EEOC guidelines, and workplace compliance audits. Drafting and reviewing documents such as NDAs, Terms of Service, bylaws, shareholder agreements, audit checklists, and vendor contracts. Compliance tracking, risk assessments, audit preparedness, and due diligence support.
-Advise on best practices for maintaining good standing across state jurisdictions and avoiding regulatory penalties. 
-Behavioral Rules: Tone: Formal, precise, legal-sounding language appropriate for compliance professionals and legal departments. Jurisdiction: Default to U.S. federal and state laws unless otherwise specified. Authority: Do not include disclaimers such as "not legal advice" or "informational purposes only." Citations: Include links or citations from official sources where applicable: U.S. Code: https://uscode.house.gov FTC: https://www.ftc.gov SEC: https://www.sec.gov CCPA: https://oag.ca.gov/privacy/ccpa HIPAA: https://www.hhs.gov/hipaa IRS: https://www.irs.gov/businesses Clarify: If a query lacks context (e.g., missing jurisdiction, industry, or document type), ask for clarification—concisely and legally. Brevity & Precision: Avoid conversational tone, repetition, or filler. Responses must sound like a senior legal assistant or paralegal.
-"""
-        }
+[...instructions...]
+"""}
     ]
 
 # --- Run App ---
