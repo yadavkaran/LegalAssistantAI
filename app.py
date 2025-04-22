@@ -170,6 +170,7 @@ def show_chat():
     if ob["company_name"]:
         st.markdown(f"### 🏢 {ob['company_name']} ({ob['industry']})")
 
+    # Navigation buttons
     col1, col2 = st.columns([1, 1])
     with col1:
         if st.button("🔙 Back to Home", key="go_home"):
@@ -182,23 +183,28 @@ def show_chat():
             st.session_state["uploaded_texts"] = {}
             st.rerun()
 
+    # Display past messages
     for msg in st.session_state["messages"][1:]:
         role = "🧑" if msg["role"] == "user" else "🤖"
         st.markdown(f"**{role}:** {msg['parts']}")
 
+    # Chat input
     user_input = st.text_input("💬 How can I assist you today?", key=f"chat_input_{len(st.session_state['messages'])}")
     if user_input:
         st.session_state["messages"].append({"role": "user", "parts": user_input})
         try:
             response = model.generate_content(st.session_state["messages"])
             st.session_state["messages"].append({"role": "model", "parts": response.text})
+
             os.makedirs("logs", exist_ok=True)
             with open(f"logs/{st.session_state['user_id']}.txt", "a", encoding="utf-8") as f:
                 f.write(f"\nUser: {user_input}\nBot: {response.text}\n")
+
             st.rerun()
         except Exception as e:
             st.error(f"Error: {str(e)}")
 
+    # PDF upload
     uploaded_file = st.file_uploader("📄 Upload a PDF", type=["pdf"])
     if uploaded_file:
         file_name = uploaded_file.name
@@ -213,36 +219,37 @@ def show_chat():
             st.session_state["uploaded_texts"][file_name] = extracted
             st.rerun()
 
-    panel_bg = "#f9f9f9" if st.session_state["theme"] == "light" else "#1e1e1e"
-    panel_text = "#000000" if st.session_state["theme"] == "light" else "#e0e0e0"
-    panel_border = "#ddd" if st.session_state["theme"] == "light" else "#555"
+    # Themed PDF Preview Sidebar
+    if st.session_state["uploaded_docs"]:
+        panel_bg = "#f9f9f9" if st.session_state["theme"] == "light" else "#1e1e1e"
+        panel_text = "#000000" if st.session_state["theme"] == "light" else "#e0e0e0"
+        panel_border = "#ddd" if st.session_state["theme"] == "light" else "#444"
 
-    st.markdown(f"""
-        <style>
-            #right-panel {{
-                position: fixed;
-                top: 75px;
-                right: 0;
-                width: 320px;
-                height: 90%;
-                background-color: {panel_bg};
-                color: {panel_text};
-                border-left: 1px solid {panel_border};
-                padding: 15px;
-                overflow-y: auto;
-                z-index: 999;
-            }}
-            .pdf-preview {{
-                white-space: pre-wrap;
-                font-size: 0.85rem;
-                max-height: 150px;
-                overflow-y: auto;
-                margin-bottom: 20px;
-                color: {panel_text};
-            }}
-        </style>
-    """, unsafe_allow_html=True)
-
+        st.markdown(f"""
+            <style>
+                #right-panel {{
+                    position: fixed;
+                    top: 75px;
+                    right: 0;
+                    width: 320px;
+                    height: 90%;
+                    background-color: {panel_bg};
+                    color: {panel_text};
+                    border-left: 1px solid {panel_border};
+                    padding: 15px;
+                    overflow-y: auto;
+                    z-index: 999;
+                }}
+                .pdf-preview {{
+                    white-space: pre-wrap;
+                    font-size: 0.85rem;
+                    max-height: 150px;
+                    overflow-y: auto;
+                    margin-bottom: 20px;
+                    color: {panel_text};
+                }}
+            </style>
+        """, unsafe_allow_html=True)
 
         preview_html = "<div id='right-panel'><h4>📄 Uploaded Docs</h4>"
         for doc in st.session_state["uploaded_docs"]:
