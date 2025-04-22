@@ -56,7 +56,23 @@ if st.session_state["theme"] == "dark":
         }
         </style>
     """, unsafe_allow_html=True)
-    
+#Centered VD button
+st.markdown("""
+    <style>
+    .centered-button {
+        display: flex;
+        justify-content: center; /* Center horizontally */
+        align-items: center;     /* Center vertically */
+        height: 100vh;           /* Full viewport height */
+    }
+    .big-button button {
+        font-size: 20px !important;
+        padding: 0.75em 2em !important;
+        border-radius: 12px;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 # --- Session State ---
 if "page" not in st.session_state:
     st.session_state.page = "home"
