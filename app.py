@@ -221,10 +221,10 @@ def show_chat():
         preview_html += "</div>"
         st.markdown(preview_html, unsafe_allow_html=True)
 
-    def remove_non_latin1(text):
+ def remove_non_latin1(text):
     """Removes characters not supported by latin1 encoding (used by fpdf)."""
-    return re.sub(r'[^\x00-\xFF]', '', text)
-    
+    return ''.join(char if ord(char) < 256 else '?' for char in text)
+     
    # Export Chat
 with st.expander("📤 Export Chat", expanded=False):
     export_format = st.selectbox("Choose format:", ["Text (.txt)", "PDF (.pdf)"])
