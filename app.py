@@ -262,20 +262,15 @@ def show_chat():
         preview_html += "</div>"
         st.markdown(preview_html, unsafe_allow_html=True)
 
-    # Export Chat
-    with st.expander("📤 Export Chat", expanded=False):
+ # Export Chat
+      with st.expander("📤 Export Chat", expanded=False):
         export_format = st.selectbox("Choose format:", ["Text (.txt)", "PDF (.pdf)"])
         chat_text = format_chat_history()
 
         if export_format == "Text (.txt)":
-            st.download_button(
-                "📥 Download Chat as TXT",
-                data=chat_text,
-                file_name="vd_chat_history.txt",
-                mime="text/plain"
-            )
+            st.download_button("📥 Download Chat as TXT", data=chat_text, file_name="vd_chat_history.txt", mime="text/plain")
 
-      elif export_format == "PDF (.pdf)":
+        elif export_format == "PDF (.pdf)":
             pdf = FPDF()
             pdf.add_page()
             pdf.set_auto_page_break(auto=True, margin=15)
