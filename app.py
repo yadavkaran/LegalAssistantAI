@@ -127,12 +127,17 @@ if "uploaded_texts" not in st.session_state:
     st.session_state["uploaded_texts"] = {}
 # --- Chat Page ---
 
+# --- Chat Formatter ---
 def format_chat_history():
     return "\n\n".join(
         f"{'User' if m['role'] == 'user' else 'VD'}: {m['parts']}"
         for m in st.session_state["messages"][1:]
     )
 
+def remove_non_latin1(text):
+    return re.sub(r'[^\x00-\xFF]', '', text)
+
+# --- Chat Page ---
 def show_chat():
     ob = st.session_state["onboarding_data"]
     st.title("📚 VD - Legal Chat Assistant")
@@ -140,7 +145,6 @@ def show_chat():
     if ob["company_name"]:
         st.markdown(f"### 🏢 {ob['company_name']} ({ob['industry']})")
 
-    # Navigation buttons
     col1, col2 = st.columns([1, 1])
     with col1:
         if st.button("🔙 Back to Home", key="go_home"):
@@ -153,28 +157,23 @@ def show_chat():
             st.session_state["uploaded_texts"] = {}
             st.rerun()
 
-    # Display past messages
     for msg in st.session_state["messages"][1:]:
         role = "🧑" if msg["role"] == "user" else "🤖"
         st.markdown(f"**{role}:** {msg['parts']}")
 
-    # Chat input
     user_input = st.text_input("💬 How can I assist you today?", key=f"chat_input_{len(st.session_state['messages'])}")
     if user_input:
         st.session_state["messages"].append({"role": "user", "parts": user_input})
         try:
             response = model.generate_content(st.session_state["messages"])
             st.session_state["messages"].append({"role": "model", "parts": response.text})
-
             os.makedirs("logs", exist_ok=True)
             with open(f"logs/{st.session_state['user_id']}.txt", "a", encoding="utf-8") as f:
                 f.write(f"\nUser: {user_input}\nBot: {response.text}\n")
-
             st.rerun()
         except Exception as e:
             st.error(f"Error: {str(e)}")
 
-    # PDF upload
     uploaded_file = st.file_uploader("📄 Upload a PDF", type=["pdf"])
     if uploaded_file:
         file_name = uploaded_file.name
@@ -189,7 +188,7 @@ def show_chat():
             st.session_state["uploaded_texts"][file_name] = extracted
             st.rerun()
 
-    # PDF Preview Sidebar
+    # Preview Panel
     if st.session_state["uploaded_docs"]:
         st.markdown("""
         <style>
@@ -221,42 +220,34 @@ def show_chat():
         preview_html += "</div>"
         st.markdown(preview_html, unsafe_allow_html=True)
 
-def remove_non_latin1(text):
-    return re.sub(r'[^\x00-\xFF]', '', text)
-     
-   # Export Chat
-with st.expander("📤 Export Chat", expanded=False):
-    export_format = st.selectbox("Choose format:", ["Text (.txt)", "PDF (.pdf)"])
-    chat_text = format_chat_history()
+    # --- Export Chat ---
+    st.markdown("---")
+    with st.expander("📤 Export Chat", expanded=False):
+        export_format = st.selectbox("Choose format:", ["Text (.txt)", "PDF (.pdf)"])
+        chat_text = format_chat_history()
 
-    if export_format == "Text (.txt)":
-        st.download_button(
-            "📥 Download Chat as TXT",
-            data=chat_text,
-            file_name="vd_chat_history.txt",
-            mime="text/plain"
-        )
+        if export_format == "Text (.txt)":
+            st.download_button("📥 Download Chat as TXT", data=chat_text, file_name="vd_chat_history.txt", mime="text/plain")
 
-    elif export_format == "PDF (.pdf)":
-        safe_chat_text = remove_non_latin1(chat_text)  # sanitize unsupported characters
-        pdf = FPDF()
-        pdf.add_page()
-        pdf.set_auto_page_break(auto=True, margin=15)
-        pdf.set_font("Arial", size=12)
+        elif export_format == "PDF (.pdf)":
+            safe_chat_text = remove_non_latin1(chat_text)
+            pdf = FPDF()
+            pdf.add_page()
+            pdf.set_auto_page_break(auto=True, margin=15)
+            pdf.set_font("Arial", size=12)
 
-        for line in safe_chat_text.split("\n"):
-            pdf.multi_cell(0, 10, line)
+            for line in safe_chat_text.split("\n"):
+                pdf.multi_cell(0, 10, line)
 
-        pdf_stream = pdf.output(dest="S").encode("latin1")
-        pdf_buffer = io.BytesIO(pdf_stream)
+            pdf_stream = pdf.output(dest="S").encode("latin1")
+            pdf_buffer = io.BytesIO(pdf_stream)
 
-        st.download_button(
-            "📥 Download Chat as PDF",
-            data=pdf_buffer,
-            file_name="vd_chat_history.pdf",
-            mime="application/pdf"
-        )
-
+            st.download_button(
+                "📥 Download Chat as PDF",
+                data=pdf_buffer,
+                file_name="vd_chat_history.pdf",
+                mime="application/pdf"
+            )
 
 # --- Run App ---
 if st.session_state.page == "home":
