@@ -56,21 +56,6 @@ if st.session_state["theme"] == "dark":
         }
         </style>
     """, unsafe_allow_html=True)
-# Add this at the top of your script or page to define the CSS
-st.markdown("""
-    <style>
-        .centered-button {
-            display: flex;
-            justify-content: center !important;
-            margin-top: 20px;
-            margin-bottom: 20px;
-        }
-        .big-button button {
-            font-size: 18px;
-            padding: 0.75em 2em;
-        }
-    </style>
-""", unsafe_allow_html=True)
 
 # --- Session State ---
 if "page" not in st.session_state:
@@ -147,12 +132,10 @@ def home():
         st.markdown(horizontal_bar, True)
         st.markdown(hlp_dtl, unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
-        
-        st.markdown('<div class="centered-button big-button">', unsafe_allow_html=True)
+
         if st.button("💬 Ask VD", key="ask_vd_always"):
             st.session_state.page = "chat"
             st.rerun()
-        st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown(horizontal_bar, True)
     st.markdown("<strong>Built by: 😎 KARAN YADAV, RUSHABH MAKWANA, ANISH AYARE</strong>", unsafe_allow_html=True)
@@ -280,24 +263,38 @@ def show_chat():
         st.markdown(preview_html, unsafe_allow_html=True)
 
     # Export Chat
-      with st.expander("📤 Export Chat", expanded=False):
+    with st.expander("📤 Export Chat", expanded=False):
         export_format = st.selectbox("Choose format:", ["Text (.txt)", "PDF (.pdf)"])
         chat_text = format_chat_history()
 
         if export_format == "Text (.txt)":
-            st.download_button("📥 Download Chat as TXT", data=chat_text, file_name="vd_chat_history.txt", mime="text/plain")
+            st.download_button(
+                "📥 Download Chat as TXT",
+                data=chat_text,
+                file_name="vd_chat_history.txt",
+                mime="text/plain"
+            )
 
         elif export_format == "PDF (.pdf)":
             pdf = FPDF()
             pdf.add_page()
             pdf.set_auto_page_break(auto=True, margin=15)
             pdf.set_font("Arial", size=12)
+
             for line in chat_text.split("\n"):
                 pdf.multi_cell(0, 10, line)
-            pdf_buffer = io.BytesIO()
-            pdf.output(pdf_buffer)
-            pdf_buffer.seek(0)
-            st.download_button("📥 Download Chat as PDF", data=pdf_buffer, file_name="vd_chat_history.pdf", mime="application/pdf")
+
+            pdf_bytes = pdf.output(dest="S").encode("latin1")
+            pdf_buffer = io.BytesIO(pdf_bytes)
+
+            st.download_button(
+                "📥 Download Chat as PDF",
+                data=pdf_buffer,
+                file_name="vd_chat_history.pdf",
+                mime="application/pdf"
+            )
+
+
 # --- Run App ---
 if st.session_state.page == "home":
     home()
