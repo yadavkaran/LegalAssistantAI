@@ -56,14 +56,14 @@ if st.session_state["theme"] == "dark":
         }
         </style>
     """, unsafe_allow_html=True)
-#Centered VD button
+#Centered Ask VD button
 st.markdown("""
     <style>
     .centered-button {
         display: flex;
         justify-content: center; /* Center horizontally */
         align-items: center;     /* Center vertically */
-        height: 100vh;           /* Full viewport height */
+        width: 100%;             /* Ensure full width for centering */
     }
     .big-button button {
         font-size: 20px !important;
