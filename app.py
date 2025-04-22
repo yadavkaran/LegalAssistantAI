@@ -10,7 +10,7 @@ import io
 from fpdf import FPDF
 
 # --- Page setup ---
-st.set_page_config(page_title="VD Legal Assistant", layout="cebter")
+st.set_page_config(page_title="VD Legal Assistant", layout="center")
 
 # --- Theme Toggle ---
 if "theme" not in st.session_state:
