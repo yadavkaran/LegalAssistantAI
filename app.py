@@ -17,6 +17,31 @@ st.set_page_config(page_title="VD Legal Assistant", layout="centered")
 if "theme" not in st.session_state:
     st.session_state["theme"] = "light"
 
+st.markdown("""
+    <style>
+        @media (prefers-color-scheme: dark) {
+            html, body, .stApp {
+                background-color: #121212 !important;
+                color: #e0e0e0 !important;
+            }
+            .stMarkdown, .stText, .st-bw, .css-1d391kg, .css-10trblm, .css-1v3fvcr, .css-1cpxqw2 {
+                color: #e0e0e0 !important;
+            }
+            .stButton > button {
+                background-color: #333 !important;
+                color: #e0e0e0 !important;
+                border: 1px solid #555 !important;
+            }
+            .stTextInput > div > input,
+            .stTextArea > div > textarea,
+            .stSelectbox > div > div {
+                background-color: #1e1e1e !important;
+                color: #e0e0e0 !important;
+            }
+        }
+    </style>
+""", unsafe_allow_html=True)
+
 # --- Session State ---
 if "page" not in st.session_state:
     st.session_state.page = "home"
