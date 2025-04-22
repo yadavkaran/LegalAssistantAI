@@ -61,7 +61,7 @@ st.markdown("""
     <style>
         .centered-button {
             display: flex;
-            justify-content: center;
+            justify-content: center !important;
             margin-top: 20px;
             margin-bottom: 20px;
         }
