@@ -20,30 +20,41 @@ if "theme" not in st.session_state:
 toggle_label = "🌙 Dark Mode" if st.session_state["theme"] == "light" else "☀️ Light Mode"
 toggle = st.toggle(toggle_label, value=(st.session_state["theme"] == "dark"))
 st.session_state["theme"] = "dark" if toggle else "light"
-st.markdown("""
-    <style>
-        @media (prefers-color-scheme: dark) {
+
+# --- Dynamic CSS Based on Theme ---
+if st.session_state["theme"] == "dark":
+    st.markdown("""
+        <style>
             html, body, .stApp {
                 background-color: #121212 !important;
                 color: #e0e0e0 !important;
             }
-            .stMarkdown, .stText, .st-bw, .css-1d391kg, .css-10trblm, .css-1v3fvcr, .css-1cpxqw2 {
+            .stMarkdown, .stTextInput input, .stSelectbox div, .stTextArea textarea,
+            .css-1cpxqw2, .css-1v3fvcr, .css-1d391kg {
                 color: #e0e0e0 !important;
+                background-color: #1e1e1e !important;
             }
-            .stButton > button {
+            .stButton button {
                 background-color: #333 !important;
                 color: #e0e0e0 !important;
                 border: 1px solid #555 !important;
             }
-            .stTextInput > div > input,
-            .stTextArea > div > textarea,
-            .stSelectbox > div > div {
+            .pdf-preview {
                 background-color: #1e1e1e !important;
                 color: #e0e0e0 !important;
             }
-        }
-    </style>
-""", unsafe_allow_html=True)
+        </style>
+    """, unsafe_allow_html=True)
+else:
+    st.markdown("""
+        <style>
+            .pdf-preview {
+                background-color: #f9f9f9 !important;
+                color: #000000 !important;
+            }
+        </style>
+    """, unsafe_allow_html=True)
+
 
 # --- Session State ---
 if "page" not in st.session_state:
