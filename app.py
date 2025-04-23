@@ -16,55 +16,6 @@ st.set_page_config(page_title="VD Legal Assistant", layout="centered")
 if "theme" not in st.session_state:
     st.session_state["theme"] = "light"
 
-toggle_label = "🌙 Dark Mode" if st.session_state["theme"] == "light" else "☀️ Light Mode"
-toggle = st.toggle(toggle_label, value=(st.session_state["theme"] == "dark"))
-st.session_state["theme"] = "dark" if toggle else "light"
-
-# --- Theme Styling (exclude right-panel and sidebar) ---
-if st.session_state["theme"] == "dark":
-    st.markdown("""
-        <style>
-            body, .stApp {
-                background-color: #121212 !important;
-                color: #e0e0e0 !important;
-            }
-            .stMarkdown, .stTextInput input, .stSelectbox div, .stTextArea textarea,
-            .css-1cpxqw2, .css-1v3fvcr, .css-1d391kg, .css-10trblm {
-                background-color: #1e1e1e !important;
-                color: #e0e0e0 !important;
-            }
-            .stButton button {
-                background-color: #333 !important;
-                color: #e0e0e0 !important;
-                border: 1px solid #555 !important;
-            }
-            /* Keep right panel light */
-            #right-panel, .pdf-preview {
-                background-color: #f9f9f9 !important;
-                color: #000000 !important;
-            }
-
-            /* Keep sidebar light */
-            section[data-testid="stSidebar"] {
-                background-color: #f5f5f5 !important;
-                color: #000000 !important;
-            }
-        </style>
-    """, unsafe_allow_html=True)
-else:
-    st.markdown("""
-        <style>
-            .pdf-preview, #right-panel {
-                background-color: #f9f9f9 !important;
-                color: #000000 !important;
-            }
-            section[data-testid="stSidebar"] {
-                background-color: #ffffff !important;
-                color: #000000 !important;
-            }
-        </style>
-    """, unsafe_allow_html=True)
-
 
 # --- Session State ---
 if "page" not in st.session_state:
