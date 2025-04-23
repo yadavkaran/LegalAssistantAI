@@ -17,6 +17,9 @@ st.set_page_config(page_title="VD Legal Assistant", layout="centered")
 if "theme" not in st.session_state:
     st.session_state["theme"] = "light"
 
+toggle_label = "🌙 Dark Mode" if st.session_state["theme"] == "light" else "☀️ Light Mode"
+toggle = st.toggle(toggle_label, value=(st.session_state["theme"] == "dark"))
+st.session_state["theme"] = "dark" if toggle else "light"
 st.markdown("""
     <style>
         @media (prefers-color-scheme: dark) {
